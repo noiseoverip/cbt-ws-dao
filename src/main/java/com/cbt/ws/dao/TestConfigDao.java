@@ -1,20 +1,24 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
-import static com.cbt.ws.jooq.tables.TestconfigDevices.TESTCONFIG_DEVICES;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
 import org.apache.log4j.Logger;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
-import com.cbt.ws.entity.TestConfiguration;
+import com.cbt.ws.entity.TestConfig;
 import com.cbt.ws.mysql.Db;
 
+/**
+ * Test configuration DAO
+ * 
+ * @author SauliusALisauskas 2013-03-03 Initial version
+ *
+ */
 public class TestConfigDao {
 
 	private final Logger mLogger = Logger.getLogger(TestConfigDao.class);
@@ -24,42 +28,42 @@ public class TestConfigDao {
 	 * 
 	 * @return
 	 */
-	public TestConfiguration[] getAll() {
-		List<TestConfiguration> testConfigurations = new ArrayList<TestConfiguration>();
+	public TestConfig[] getAll() {
+		List<TestConfig> testExecutions = new ArrayList<TestConfig>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTCONFIG).fetch();
 		for (Record r : result) {
-			TestConfiguration tc = new TestConfiguration();
+			TestConfig tc = new TestConfig();
 			tc.setId(r.getValue(TESTCONFIG.TESTCONFIG_ID));
-			tc.setMode(r.getValue(TESTCONFIG.MODE));			
-			tc.setMetadata(r.getValue(TESTCONFIG.METADATA));
-			testConfigurations.add(tc);
+			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
-		return testConfigurations.toArray(new TestConfiguration[testConfigurations.size()]);
+		return testExecutions.toArray(new TestConfig[testExecutions.size()]);
 	}
 
 	/**
-	 * Create new TestPackage record mainly to generate new id
+	 * Add new test configuration
 	 * 
 	 * @param userid
 	 * @return
 	 */
-	public Long add(TestConfiguration tConfiguration) {
+	public Long add(TestConfig testConfig) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		
 		mLogger.trace("Adding new test configuration");
-		Long testConfigID = sqexec.insertInto(TESTCONFIG, TESTCONFIG.MODE, TESTCONFIG.DEVICETYPECOUNT)
-				.values(tConfiguration.getMode(), tConfiguration.getDeviceTypes().size())
+		Long testConfigID = sqexec
+				.insertInto(TESTCONFIG, 
+						TESTCONFIG.USER_ID, 
+						TESTCONFIG.TESTPACKAGE_ID, 
+						TESTCONFIG.TESTTARGET_ID,
+						TESTCONFIG.TESTPROFILE_ID, 
+						TESTCONFIG.METADATA)
+				.values(testConfig.getUserId(), 
+						testConfig.getTestPackageId(), 
+						testConfig.getTestTargetId(),
+						testConfig.getTestProfileId(), 
+						testConfig.getMetadata())
 				.returning(TESTCONFIG.TESTCONFIG_ID).fetchOne().getTestconfigId();
-		mLogger.trace("Added test configuration, enw id:" + testConfigID);
-		mLogger.trace("Adding device list to test configuration:" + testConfigID);
-		for (Integer deviceTypeId : tConfiguration.getDeviceTypes()) { 
-			mLogger.trace("Addign device id");
-			//TODO: improve performance here
-			sqexec.insertInto(TESTCONFIG_DEVICES, TESTCONFIG_DEVICES.TESTCONFIG_ID, TESTCONFIG_DEVICES.DEVICE_TYPE_ID)
-					.values(testConfigID, deviceTypeId).execute();
-		}
+		mLogger.trace("Added test configuration, enw id:" + testConfigID);		
 		return testConfigID;
 	}
 }

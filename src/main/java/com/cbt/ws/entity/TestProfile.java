@@ -2,17 +2,17 @@ package com.cbt.ws.entity;
 
 import java.util.List;
 
-import com.cbt.ws.jooq.enums.TestconfigMode;
+import com.cbt.ws.jooq.enums.TestprofileMode;
 
-public class TestConfiguration extends CbtEntity {
-	private TestconfigMode mode;
+public class TestProfile extends CbtEntity {
+	private TestprofileMode mode;
 	private List<Integer> deviceTypes;
 
-	public TestconfigMode getMode() {
+	public TestprofileMode getMode() {
 		return mode;
 	}
 
-	public void setMode(TestconfigMode mode) {
+	public void setMode(TestprofileMode mode) {
 		this.mode = mode;
 	}
 

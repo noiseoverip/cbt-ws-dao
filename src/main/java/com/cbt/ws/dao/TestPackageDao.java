@@ -22,6 +22,12 @@ import com.cbt.ws.jooq.tables.records.TestpackageRecord;
 import com.cbt.ws.mysql.Db;
 import com.cbt.ws.utils.FileOperations;
 
+/**
+ * Test package DAO
+ * 
+ * @author SauliusALisauskas 2013-03-03 Initial version
+ *
+ */
 public class TestPackageDao {
 
 	private String mTestPackageStorePath;
@@ -34,11 +40,11 @@ public class TestPackageDao {
 	}
 
 	/**
-	 * Get all packages
+	 * Get all test packages
 	 * 
 	 * @return
 	 */
-	public TestPackage[] getPackagesAll() {
+	public TestPackage[] getAll() {
 		List<TestPackage> packages = new ArrayList<TestPackage>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTPACKAGE).fetch();
