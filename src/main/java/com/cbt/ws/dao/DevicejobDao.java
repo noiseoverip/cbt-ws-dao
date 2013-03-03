@@ -14,13 +14,15 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.DeviceJob;
+import com.cbt.ws.jooq.enums.DevicejobsStatus;
+import com.cbt.ws.jooq.tables.records.DevicejobsRecord;
 import com.cbt.ws.mysql.Db;
 
 /**
  * Device job DAO
  * 
  * @author SauliusALisauskas 2013-03-03 Initial version
- *
+ * 
  */
 public class DevicejobDao {
 
@@ -48,6 +50,20 @@ public class DevicejobDao {
 		}
 		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
 	}
+	
+	/**
+	 * Get oldest job with status WAITING
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	public DeviceJob getOldestWaiting(Long deviceId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		DevicejobsRecord record = (DevicejobsRecord) sqexec.select().from(DEVICEJOBS)
+				.where(DEVICEJOBS.DEVICE_ID.eq(deviceId).and(DEVICEJOBS.STATUS.eq(DevicejobsStatus.WAITING)))
+				.orderBy(DEVICEJOBS.CREATED.asc()).limit(0, 1).fetchOne();		
+		return DeviceJob.fromJooqRecord(record);
+	}
 
 	/**
 	 * Add new test configuration
@@ -59,15 +75,11 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new device job");
 		Long testConfigID = sqexec
-				.insertInto(DEVICEJOBS, 
-						DEVICEJOBS.DEVICE_ID, 
-						DEVICEJOBS.TESTRUN_ID, 
-						DEVICEJOBS.CREATED)
-				.values(testConfig.getDeviceId(), 
-						testConfig.getTestRunId(), 
-						new Timestamp(Calendar.getInstance().getTimeInMillis()))
-				.returning(DEVICEJOBS.DEVICEJOB_ID).fetchOne().getDevicejobId();
-		mLogger.trace("Added device job, new id:" + testConfigID);		
+				.insertInto(DEVICEJOBS, DEVICEJOBS.DEVICE_ID, DEVICEJOBS.TESTRUN_ID, DEVICEJOBS.CREATED)
+				.values(testConfig.getDeviceId(), testConfig.getTestRunId(),
+						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICEJOBS.DEVICEJOB_ID)
+				.fetchOne().getDevicejobId();
+		mLogger.trace("Added device job, new id:" + testConfigID);
 		return testConfigID;
 	}
 }
