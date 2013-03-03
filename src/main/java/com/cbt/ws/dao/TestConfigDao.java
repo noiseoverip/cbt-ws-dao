@@ -35,6 +35,12 @@ public class TestConfigDao {
 		for (Record r : result) {
 			TestConfig tc = new TestConfig();
 			tc.setId(r.getValue(TESTCONFIG.TESTCONFIG_ID));
+			tc.setTestTargetId(r.getValue(TESTCONFIG.TESTTARGET_ID));
+			tc.setTestPackageId(r.getValue(TESTCONFIG.TESTPACKAGE_ID));
+			tc.setTestProfileId(r.getValue(TESTCONFIG.TESTPROFILE_ID));
+			tc.setMetadata(r.getValue(TESTCONFIG.METADATA));
+			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
+			tc.setUpdated(r.getValue(TESTCONFIG.UPDATED));
 			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
