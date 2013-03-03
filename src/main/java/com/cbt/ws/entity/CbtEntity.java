@@ -5,6 +5,20 @@ import java.util.Date;
 public abstract class CbtEntity {
 	private Long id;
 	private Long userId; // owner
+	private String title;
+	private String username;
+	private Date updated;
+	private Date created;
+
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	private String metadata;
 
 	public Long getUserId() {
 		return userId;
@@ -13,11 +27,6 @@ public abstract class CbtEntity {
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
-
-	private String title;
-	private String username;
-	private Date updated;
-	private String metadata;
 
 	public Long getId() {
 		return id;

@@ -69,7 +69,7 @@ public class TestConfigDao {
 						testConfig.getTestProfileId(), 
 						testConfig.getMetadata())
 				.returning(TESTCONFIG.TESTCONFIG_ID).fetchOne().getTestconfigId();
-		mLogger.trace("Added test configuration, enw id:" + testConfigID);		
+		mLogger.trace("Added test configuration, new id:" + testConfigID);		
 		return testConfigID;
 	}
 }

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 public final class FileOperations {
 	
@@ -27,5 +28,8 @@ public final class FileOperations {
 		out.flush();
 		out.close();
 	}
-
+	
+	public Date getCurrentDate() {
+		return new Date();
+	}
 }
