@@ -1,4 +1,6 @@
 cbt-ws-dao
 ==========
 
-DAO for CBT web service
+To generate JOOQ MYQL files:
+set appropriate credentials in /jooq-config.xml
+launch class: org.jooq.util.GenerationTool with argument: /jooq-config.xml
