@@ -62,19 +62,19 @@ public class TestPackageDao {
 	 */
 	public void storeTestPackage(TestPackage testPackage, InputStream uploadedInputStream) throws IOException {
 		// Create new test package record in db -> get it's id
-		Long newTestPackageId = createNewTestPackageRecord(testPackage.getOwner().getId());
+		Long newTestPackageId = createNewTestPackageRecord(testPackage.getUserId());
 		mLogger.debug("Generated new id for test package:" + newTestPackageId);
 
 		// Create appropriate folder structure to store the file
 		testPackage.setId(newTestPackageId);
-		String testPackagePath = createTestPackageFolder(newTestPackageId, testPackage.getOwner().getId());
+		String testPackagePath = createTestPackageFolder(newTestPackageId, testPackage.getUserId());
 
 		// Store the file
 		// TODO: manage file names better
 		String filePath = testPackagePath + "//" + "uiautomator.jar";
 		FileOperations.writeToFile(uploadedInputStream, filePath);
 
-		// Update test package path and other info		
+		// Update test package path and other info
 		testPackage.setFilePath(filePath);
 		updateTestPackage(testPackage);
 	}
@@ -85,7 +85,7 @@ public class TestPackageDao {
 	 * @param userid
 	 * @return
 	 */
-	private Long createNewTestPackageRecord(Integer userid) {
+	private Long createNewTestPackageRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		TestpackageRecord result = sqexec.insertInto(TESTPACKAGE, TESTPACKAGE.USER_ID).values(userid)
 				.returning(TESTPACKAGE.TESTPACKAGE_ID).fetchOne();
@@ -99,7 +99,7 @@ public class TestPackageDao {
 	 * @param userId
 	 * @return
 	 */
-	private String createTestPackageFolder(Long packagId, Integer userId) {
+	private String createTestPackageFolder(Long packagId, Long userId) {
 		// create user folder if not existing
 		String path = mTestPackageStorePath + userId + "//tp-" + packagId;
 		if (new File(path).mkdirs()) {
@@ -108,7 +108,7 @@ public class TestPackageDao {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Update test package information
 	 * 
@@ -116,12 +116,12 @@ public class TestPackageDao {
 	 */
 	private void updateTestPackage(TestPackage testPackage) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		
+
 		if (sqexec.update(TESTPACKAGE).set(TESTPACKAGE.PATH, testPackage.getFilePath())
-				.where(TESTPACKAGE.TESTPACKAGE_ID.eq(testPackage.getId())).execute() != 1){
+				.where(TESTPACKAGE.TESTPACKAGE_ID.eq(testPackage.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testPackage);
 		} else {
 			mLogger.debug("Test package updated:" + testPackage);
-		}		
+		}
 	}
 }

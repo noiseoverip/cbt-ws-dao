@@ -47,7 +47,7 @@ public class TestTargetDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTTARGET).fetch();
 		for (Record r : result) {
-			TestTarget tp = new TestTarget();
+			TestTarget tp = new TestTarget();			
 			tp.setId(r.getValue(TESTTARGET.TESTTARGET_ID));
 			tp.setFilePath(r.getValue(TESTTARGET.PATH));
 			tp.setMetadata(r.getValue(TESTTARGET.METADATA));
@@ -66,12 +66,12 @@ public class TestTargetDao {
 	 */
 	public void storeTestTarget(TestTarget testTarget, InputStream uploadedInputStream) throws IOException {
 		// Create new test package record in db -> get it's id
-		Long newTestPackageId = createNewTestPackageRecord(testTarget.getOwner().getId());
+		Long newTestPackageId = createNewTestPackageRecord(testTarget.getUserId());
 		mLogger.debug("Generated new id for test package:" + newTestPackageId);
 
 		// Create appropriate folder structure to store the file
 		testTarget.setId(newTestPackageId);
-		String testPackagePath = createTestTargetFolder(newTestPackageId, testTarget.getOwner().getId());
+		String testPackagePath = createTestTargetFolder(newTestPackageId, testTarget.getUserId());
 
 		// Store the file
 		// TODO: manage file names better
@@ -89,7 +89,7 @@ public class TestTargetDao {
 	 * @param userid
 	 * @return
 	 */
-	private Long createNewTestPackageRecord(Integer userid) {
+	private Long createNewTestPackageRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		TesttargetRecord result = sqexec.insertInto(TESTTARGET, TESTTARGET.USER_ID).values(userid)
 				.returning(TESTTARGET.TESTTARGET_ID).fetchOne();
@@ -103,7 +103,7 @@ public class TestTargetDao {
 	 * @param userId
 	 * @return
 	 */
-	private String createTestTargetFolder(Long targetId, Integer userId) {
+	private String createTestTargetFolder(Long targetId, Long userId) {
 		// create user folder if not existing
 		String path = mFileStorePath + userId + "//tt-" + targetId;
 		if (new File(path).mkdirs()) {
