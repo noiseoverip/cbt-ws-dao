@@ -28,15 +28,15 @@ import com.cbt.ws.utils.FileOperations;
  * @author SauliusALisauskas 2013-03-03 Initial version
  *
  */
-public class TestPackageDao {
+public class TestScriptDao {
 
-	private String mTestPackageStorePath;
+	private String mTestScriptStorePath;
 
-	private final Logger mLogger = Logger.getLogger(TestPackageDao.class);
+	private final Logger mLogger = Logger.getLogger(TestScriptDao.class);
 
 	@Inject
-	public TestPackageDao(@TestFileStorePath String testPackageStorePath) {
-		mTestPackageStorePath = testPackageStorePath;
+	public TestScriptDao(@TestFileStorePath String testPackageStorePath) {
+		mTestScriptStorePath = testPackageStorePath;
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class TestPackageDao {
 	 */
 	private String createTestPackageFolder(Long packagId, Long userId) {
 		// create user folder if not existing
-		String path = mTestPackageStorePath + userId + "//tp-" + packagId;
+		String path = mTestScriptStorePath + userId + "//tp-" + packagId;
 		if (new File(path).mkdirs()) {
 			mLogger.info("New folder created:" + path);
 			return path;
