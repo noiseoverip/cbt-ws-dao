@@ -17,7 +17,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.annotations.TestFileStorePath;
-import com.cbt.ws.entity.TestPackage;
+import com.cbt.ws.entity.TestScript;
 import com.cbt.ws.jooq.tables.records.TestpackageRecord;
 import com.cbt.ws.mysql.Db;
 import com.cbt.ws.utils.FileOperations;
@@ -38,25 +38,25 @@ public class TestScriptDao {
 	public TestScriptDao(@TestFileStorePath String testPackageStorePath) {
 		mTestScriptStorePath = testPackageStorePath;
 	}
-
+	
 	/**
 	 * Get all test packages
 	 * 
 	 * @return
 	 */
-	public TestPackage[] getAll() {
-		List<TestPackage> packages = new ArrayList<TestPackage>();
+	public TestScript[] getAll() {
+		List<TestScript> packages = new ArrayList<TestScript>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTPACKAGE).fetch();
 		for (Record r : result) {
-			TestPackage tp = new TestPackage();
+			TestScript tp = new TestScript();
 			tp.setId(r.getValue(TESTPACKAGE.TESTPACKAGE_ID));
 			tp.setFilePath(r.getValue(TESTPACKAGE.PATH));
 			tp.setMetadata(r.getValue(TESTPACKAGE.METADATA));
 			packages.add(tp);
 			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
 		}
-		return packages.toArray(new TestPackage[packages.size()]);
+		return packages.toArray(new TestScript[packages.size()]);
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class TestScriptDao {
 	 * @param uploadedInputStream
 	 * @throws IOException
 	 */
-	public void storeTestPackage(TestPackage testPackage, InputStream uploadedInputStream) throws IOException {
+	public void storeTestPackage(TestScript testPackage, InputStream uploadedInputStream) throws IOException {
 		// Create new test package record in db -> get it's id
 		Long newTestPackageId = createNewTestPackageRecord(testPackage.getUserId());
 		mLogger.debug("Generated new id for test package:" + newTestPackageId);
@@ -120,7 +120,7 @@ public class TestScriptDao {
 	 * 
 	 * @param testPackage
 	 */
-	private void updateTestPackage(TestPackage testPackage) {
+	private void updateTestPackage(TestScript testPackage) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 
 		if (sqexec.update(TESTPACKAGE).set(TESTPACKAGE.PATH, testPackage.getFilePath())
