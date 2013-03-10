@@ -1,6 +1,6 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.Devicejobs.DEVICEJOBS;
+import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
 import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
 import static com.cbt.ws.jooq.tables.Testpackage.TESTPACKAGE;
 import static com.cbt.ws.jooq.tables.Testrun.TESTRUN;
@@ -56,12 +56,12 @@ public class CheckoutDao {
 	public TestPackage getTestPackage(Long devicejobId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		// TODO: improve size of returned data, we only need a couple of fields
-		Record result = sqexec.select().from(DEVICEJOBS)
-				.join(TESTRUN).on(DEVICEJOBS.TESTRUN_ID.eq(TESTRUN.TESTRUN_ID))
+		Record result = sqexec.select().from(DEVICE_JOB)
+				.join(TESTRUN).on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.TESTRUN_ID))
 				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
 				.join(TESTPACKAGE).on(TESTPACKAGE.TESTPACKAGE_ID.eq(TESTCONFIG.TESTPACKAGE_ID))
 				.join(TESTTARGET).on(TESTTARGET.TESTTARGET_ID.eq(TESTCONFIG.TESTTARGET_ID))
-				.where(DEVICEJOBS.DEVICEJOB_ID.eq(devicejobId))
+				.where(DEVICE_JOB.DEVICEJOB_ID.eq(devicejobId))
 				.fetchOne();
 		
 		TestPackage tp = new TestPackage();

@@ -1,12 +1,12 @@
 package com.cbt.ws.entity;
 
-import com.cbt.ws.jooq.enums.DevicejobsStatus;
-import com.cbt.ws.jooq.tables.records.DevicejobsRecord;
+import com.cbt.ws.jooq.enums.DeviceJobStatus;
+import com.cbt.ws.jooq.tables.records.DeviceJobRecord;
 
 public class DeviceJob extends CbtEntity {
 	private Long deviceId;
 	private Long testRunId;
-	private DevicejobsStatus status;
+	private DeviceJobStatus status;
 
 	/**
 	 * Default constructor
@@ -21,7 +21,7 @@ public class DeviceJob extends CbtEntity {
 	 * @param record
 	 * @return
 	 */
-	public static DeviceJob fromJooqRecord(DevicejobsRecord record) {
+	public static DeviceJob fromJooqRecord(DeviceJobRecord record) {
 		if (null == record) {
 			return null;
 		}
@@ -51,11 +51,11 @@ public class DeviceJob extends CbtEntity {
 		this.testRunId = testRunId;
 	}
 
-	public DevicejobsStatus getStatus() {
+	public DeviceJobStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(DevicejobsStatus status) {
+	public void setStatus(DeviceJobStatus status) {
 		this.status = status;
 	}
 

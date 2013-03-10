@@ -1,6 +1,6 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.Devicejobs.DEVICEJOBS;
+import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -15,8 +15,8 @@ import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.DeviceJob;
 import com.cbt.ws.exceptions.CbtDaoException;
-import com.cbt.ws.jooq.enums.DevicejobsStatus;
-import com.cbt.ws.jooq.tables.records.DevicejobsRecord;
+import com.cbt.ws.jooq.enums.DeviceJobStatus;
+import com.cbt.ws.jooq.tables.records.DeviceJobRecord;
 import com.cbt.ws.mysql.Db;
 
 /**
@@ -39,9 +39,9 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new device job");
 		Long testConfigID = sqexec
-				.insertInto(DEVICEJOBS, DEVICEJOBS.DEVICE_ID, DEVICEJOBS.TESTRUN_ID, DEVICEJOBS.CREATED)
+				.insertInto(DEVICE_JOB, DEVICE_JOB.DEVICE_ID, DEVICE_JOB.TESTRUN_ID, DEVICE_JOB.CREATED)
 				.values(deviceJob.getDeviceId(), deviceJob.getTestRunId(),
-						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICEJOBS.DEVICEJOB_ID)
+						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICE_JOB.DEVICEJOB_ID)
 				.fetchOne().getDevicejobId();
 		mLogger.trace("Added device job, new id:" + testConfigID);
 		return testConfigID;
@@ -55,15 +55,15 @@ public class DevicejobDao {
 	public DeviceJob[] getAll() {
 		List<DeviceJob> testExecutions = new ArrayList<DeviceJob>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(DEVICEJOBS).fetch();
+		Result<Record> result = sqexec.select().from(DEVICE_JOB).fetch();
 		for (Record r : result) {
 			DeviceJob tc = new DeviceJob();
-			tc.setId(r.getValue(DEVICEJOBS.DEVICEJOB_ID));
-			tc.setDeviceId(r.getValue(DEVICEJOBS.DEVICE_ID));
-			tc.setTestRunId(r.getValue(DEVICEJOBS.TESTRUN_ID));
-			tc.setCreated(r.getValue(DEVICEJOBS.CREATED));
-			tc.setUpdated(r.getValue(DEVICEJOBS.UPDATED));
-			tc.setStatus(r.getValue(DEVICEJOBS.STATUS));
+			tc.setId(r.getValue(DEVICE_JOB.DEVICEJOB_ID));
+			tc.setDeviceId(r.getValue(DEVICE_JOB.DEVICE_ID));
+			tc.setTestRunId(r.getValue(DEVICE_JOB.TESTRUN_ID));
+			tc.setCreated(r.getValue(DEVICE_JOB.CREATED));
+			tc.setUpdated(r.getValue(DEVICE_JOB.UPDATED));
+			tc.setStatus(r.getValue(DEVICE_JOB.STATUS));
 			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
@@ -78,9 +78,9 @@ public class DevicejobDao {
 	 */
 	public DeviceJob getOldestWaiting(Long deviceId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		DevicejobsRecord record = (DevicejobsRecord) sqexec.select().from(DEVICEJOBS)
-				.where(DEVICEJOBS.DEVICE_ID.eq(deviceId).and(DEVICEJOBS.STATUS.eq(DevicejobsStatus.WAITING)))
-				.orderBy(DEVICEJOBS.CREATED.asc()).limit(0, 1).fetchOne();		
+		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
+				.where(DEVICE_JOB.DEVICE_ID.eq(deviceId).and(DEVICE_JOB.STATUS.eq(DeviceJobStatus.WAITING)))
+				.orderBy(DEVICE_JOB.CREATED.asc()).limit(0, 1).fetchOne();		
 		return DeviceJob.fromJooqRecord(record);
 	}
 	
@@ -94,9 +94,9 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Updating deviceJob");
 		int count = sqexec
-				.update(DEVICEJOBS)
-				.set(DEVICEJOBS.STATUS, deviceJob.getStatus())
-				.where(DEVICEJOBS.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+				.update(DEVICE_JOB)
+				.set(DEVICE_JOB.STATUS, deviceJob.getStatus())
+				.where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
 		
 		if (count != 1) {
 			mLogger.error("Could not update deviceJob:" + deviceJob);

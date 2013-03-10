@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.cbt.ws.entity.DeviceJob;
 import com.cbt.ws.exceptions.CbtDaoException;
-import com.cbt.ws.jooq.enums.DevicejobsStatus;
+import com.cbt.ws.jooq.enums.DeviceJobStatus;
 
 public class DevicejobDaoTest {
 
@@ -15,7 +15,7 @@ public class DevicejobDaoTest {
 		Long deviceId = 1L;
 		DevicejobDao dao = new DevicejobDao();
 		DeviceJob job = dao.getOldestWaiting(deviceId);
-		job.setStatus(DevicejobsStatus.CHECKEDOUT);
+		job.setStatus(DeviceJobStatus.CHECKEDOUT);
 		
 		try {
 			dao.update(job);
