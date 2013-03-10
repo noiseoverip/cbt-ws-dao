@@ -14,6 +14,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.DeviceJob;
+import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.enums.DevicejobsStatus;
 import com.cbt.ws.jooq.tables.records.DevicejobsRecord;
 import com.cbt.ws.mysql.Db;
@@ -28,6 +29,24 @@ public class DevicejobDao {
 
 	private final Logger mLogger = Logger.getLogger(DevicejobDao.class);
 
+	/**
+	 * Add new test configuration
+	 * 
+	 * @param userid
+	 * @return
+	 */
+	public Long add(DeviceJob deviceJob) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		mLogger.trace("Adding new device job");
+		Long testConfigID = sqexec
+				.insertInto(DEVICEJOBS, DEVICEJOBS.DEVICE_ID, DEVICEJOBS.TESTRUN_ID, DEVICEJOBS.CREATED)
+				.values(deviceJob.getDeviceId(), deviceJob.getTestRunId(),
+						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICEJOBS.DEVICEJOB_ID)
+				.fetchOne().getDevicejobId();
+		mLogger.trace("Added device job, new id:" + testConfigID);
+		return testConfigID;
+	}
+	
 	/**
 	 * Get device jobs
 	 * 
@@ -50,7 +69,7 @@ public class DevicejobDao {
 		}
 		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
 	}
-	
+
 	/**
 	 * Get oldest job with status WAITING
 	 * 
@@ -64,22 +83,25 @@ public class DevicejobDao {
 				.orderBy(DEVICEJOBS.CREATED.asc()).limit(0, 1).fetchOne();		
 		return DeviceJob.fromJooqRecord(record);
 	}
-
+	
 	/**
-	 * Add new test configuration
+	 * Update deviceJob, we should only need to update: state
 	 * 
-	 * @param userid
-	 * @return
+	 * @param deviceJob
+	 * @throws CbtDaoException 
 	 */
-	public Long add(DeviceJob testConfig) {
+	public void update(DeviceJob deviceJob) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		mLogger.trace("Adding new device job");
-		Long testConfigID = sqexec
-				.insertInto(DEVICEJOBS, DEVICEJOBS.DEVICE_ID, DEVICEJOBS.TESTRUN_ID, DEVICEJOBS.CREATED)
-				.values(testConfig.getDeviceId(), testConfig.getTestRunId(),
-						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICEJOBS.DEVICEJOB_ID)
-				.fetchOne().getDevicejobId();
-		mLogger.trace("Added device job, new id:" + testConfigID);
-		return testConfigID;
+		mLogger.trace("Updating deviceJob");
+		int count = sqexec
+				.update(DEVICEJOBS)
+				.set(DEVICEJOBS.STATUS, deviceJob.getStatus())
+				.where(DEVICEJOBS.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+		
+		if (count != 1) {
+			mLogger.error("Could not update deviceJob:" + deviceJob);
+			throw new CbtDaoException("Could not update deviceJob");
+		}
+		mLogger.trace("Updated device job, result: " + count);		
 	}
 }
