@@ -20,7 +20,7 @@ import com.cbt.ws.annotations.TestFileStorePath;
 import com.cbt.ws.entity.TestTarget;
 import com.cbt.ws.jooq.tables.records.TesttargetRecord;
 import com.cbt.ws.mysql.Db;
-import com.cbt.ws.utils.FileOperations;
+import com.cbt.ws.utils.Utils;
 
 /**
  * Test target(aplication) DAO
@@ -78,7 +78,7 @@ public class TestTargetDao {
 		// Store the file
 		// TODO: manage file names better
 		String filePath = testPackagePath + "//app-" + testTarget.getId() + ".apk";
-		FileOperations.writeToFile(uploadedInputStream, filePath);
+		Utils.writeToFile(uploadedInputStream, filePath);
 
 		// Update path and other info
 		testTarget.setFilePath(filePath);

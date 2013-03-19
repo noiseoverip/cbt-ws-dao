@@ -12,12 +12,6 @@ import com.cbt.ws.jooq.tables.records.DeviceRecord;
  * 
  */
 public class Device extends CbtEntity {
-	private String deviceUniqueId;
-	private Long deviceTypeId;
-	private Long deviceOsId;
-	private DeviceState state;
-	private Date updated;
-
 	/**
 	 * Constructor to create device object from Jooq record
 	 * 
@@ -38,6 +32,26 @@ public class Device extends CbtEntity {
 		device.setUserId(record.getUserId());
 		return device;
 	}
+	
+	private Long deviceOsId;
+	private Long deviceTypeId;
+	private String deviceUniqueId;
+	private String serialNumber;
+	private DeviceState state;
+
+	private Date updated;
+
+	@Override
+	public boolean equals(Object object) {
+		if (null != object && object instanceof Device) {
+			Device other = (Device) object;
+			if (getId().equals(other.getId()) && getDeviceOsId().equals(other.getDeviceOsId())
+					&& getDeviceTypeId().equals(other.getDeviceTypeId())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public Long getDeviceOsId() {
 		return deviceOsId;
@@ -49,6 +63,10 @@ public class Device extends CbtEntity {
 
 	public String getDeviceUniqueId() {
 		return deviceUniqueId;
+	}
+
+	public String getSerialNumber() {
+		return serialNumber;
 	}
 
 	public DeviceState getState() {
@@ -71,24 +89,15 @@ public class Device extends CbtEntity {
 		this.deviceUniqueId = deviceUniqueId;
 	}
 
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+
 	public void setState(DeviceState state) {
 		this.state = state;
 	}
-
+	
 	public void setUpdated(Date updated) {
 		this.updated = updated;
-	}
-
-	@Override
-	public boolean equals(Object object) {
-		if (null != object && object instanceof Device) {
-			Device other = (Device) object;
-			if (getId().equals(other.getId()) && getDeviceUniqueId().equals(other.getDeviceUniqueId())
-					&& getDeviceOsId().equals(other.getDeviceOsId())
-					&& getDeviceTypeId().equals(other.getDeviceTypeId())) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

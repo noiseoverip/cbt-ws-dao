@@ -2,7 +2,6 @@ package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.Device.DEVICE;
 
-import org.apache.log4j.Logger;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
@@ -13,7 +12,7 @@ import com.cbt.ws.mysql.Db;
 
 public class DeviceDao {
 
-	private final Logger mLogger = Logger.getLogger(DeviceDao.class);
+	//private final Logger mLogger = Logger.getLogger(DeviceDao.class);
 
 	/**
 	 * Add new device
@@ -23,8 +22,8 @@ public class DeviceDao {
 	 */
 	public Long add(Device device) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);		
-		Long newDeviceId = sqexec.insertInto(DEVICE, DEVICE.USER_ID, DEVICE.DEVICEUNIQUE_ID, DEVICE.DEVICETYPE_ID, DEVICE.DEVICEOS_ID)
-				.values(device.getUserId(), device.getDeviceUniqueId(), device.getDeviceTypeId(), device.getDeviceOsId())
+		Long newDeviceId = sqexec.insertInto(DEVICE, DEVICE.USER_ID, DEVICE.SERIALNUMBER, DEVICE.DEVICEUNIQUE_ID, DEVICE.DEVICETYPE_ID, DEVICE.DEVICEOS_ID)
+				.values(device.getUserId(), device.getSerialNumber(), device.getDeviceUniqueId(), device.getDeviceTypeId(), device.getDeviceOsId())
 				.returning(DEVICE.DEVICE_ID).fetchOne().getDeviceId();		
 		return newDeviceId;
 	}

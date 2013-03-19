@@ -20,7 +20,7 @@ import com.cbt.ws.annotations.TestFileStorePath;
 import com.cbt.ws.entity.TestScript;
 import com.cbt.ws.jooq.tables.records.TestpackageRecord;
 import com.cbt.ws.mysql.Db;
-import com.cbt.ws.utils.FileOperations;
+import com.cbt.ws.utils.Utils;
 
 /**
  * Test package DAO
@@ -78,7 +78,7 @@ public class TestScriptDao {
 		// Store the file
 		// TODO: manage file names better
 		String filePath = testPackagePath + "//" + "uiautomator.jar";
-		FileOperations.writeToFile(uploadedInputStream, filePath);
+		Utils.writeToFile(uploadedInputStream, filePath);
 
 		// Update test package path and other info
 		testPackage.setFilePath(filePath);
