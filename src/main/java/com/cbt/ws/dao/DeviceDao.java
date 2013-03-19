@@ -53,9 +53,9 @@ public class DeviceDao {
 	 * @param device
 	 * @throws CbtDaoException
 	 */
-	public void deleteDevice(Device device) throws CbtDaoException {
+	public void deleteDevice(Long deviceId) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int result = sqexec.delete(DEVICE).where(DEVICE.DEVICE_ID.eq(device.getId())).execute();
+		int result = sqexec.delete(DEVICE).where(DEVICE.DEVICE_ID.eq(deviceId)).execute();
 		if (result != 1) {
 			throw new CbtDaoException("Error while deleting device, result:" + result);
 		}
@@ -71,6 +71,20 @@ public class DeviceDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE)
 				.where(DEVICE.DEVICE_ID.eq(deviceId))
+				.fetchOne();		
+		return Device.fromJooqRecord(record);
+	}
+	
+	/**
+	 * Get device by device unique id
+	 * 
+	 * @param device
+	 * @return
+	 */
+	public Device getDeviceByUid(String uniqueId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE)
+				.where(DEVICE.DEVICEUNIQUE_ID.eq(uniqueId))
 				.fetchOne();		
 		return Device.fromJooqRecord(record);
 	}

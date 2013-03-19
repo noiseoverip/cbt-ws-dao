@@ -6,6 +6,8 @@ import static org.junit.Assert.fail;
 
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -17,6 +19,9 @@ public class DeviceDaoTest {
 	
 	private final Logger mLogger = Logger.getLogger(DeviceDaoTest.class);
 	
+	/**
+	 * Tests: add(), get(), getDeviceByUid()
+	 */
 	@Test
 	public void testAddNewDevice() {
 		DeviceDao dao = new DeviceDao();
@@ -33,6 +38,9 @@ public class DeviceDaoTest {
 		} catch(Exception e) {
 			mLogger.error(e);
 		}
+		
+		Device deviceByUid = dao.getDeviceByUid(device1.getDeviceUniqueId());
+		Assert.assertEquals(device1, deviceByUid);
 		
 		//Clean up		
 		deleteDevice(dao, device1);		
@@ -66,6 +74,7 @@ public class DeviceDaoTest {
 			device.setUserId(1L);
 			device.setDeviceTypeId(1L);
 			device.setDeviceOsId(1L);
+			device.setSerialNumber("someserialnumbver");
 			String uniqueId = UUID.randomUUID().toString();
 			device.setDeviceUniqueId(uniqueId);
 		}		
@@ -78,7 +87,7 @@ public class DeviceDaoTest {
 	
 	private void deleteDevice(DeviceDao dao, Device device) {
 		try {
-			dao.deleteDevice(device);
+			dao.deleteDevice(device.getId());
 		} catch (CbtDaoException e) {
 			mLogger.error("Could not delete device", e);
 			fail("Could not delete " + device);
