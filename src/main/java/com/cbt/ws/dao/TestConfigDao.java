@@ -1,9 +1,10 @@
 package com.cbt.ws.dao;
 
+import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
 import org.apache.log4j.Logger;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -36,7 +37,7 @@ public class TestConfigDao {
 			TestConfig tc = new TestConfig();
 			tc.setId(r.getValue(TESTCONFIG.TESTCONFIG_ID));
 			tc.setTestTargetId(r.getValue(TESTCONFIG.TESTTARGET_ID));
-			tc.setTestPackageId(r.getValue(TESTCONFIG.TESTPACKAGE_ID));
+			tc.setTestScriptId(r.getValue(TESTCONFIG.TESTSCRIPT_ID));
 			tc.setTestProfileId(r.getValue(TESTCONFIG.TESTPROFILE_ID));
 			tc.setMetadata(r.getValue(TESTCONFIG.METADATA));
 			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
@@ -57,19 +58,12 @@ public class TestConfigDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new test configuration");
 		Long testConfigID = sqexec
-				.insertInto(TESTCONFIG, 
-						TESTCONFIG.USER_ID, 
-						TESTCONFIG.TESTPACKAGE_ID, 
-						TESTCONFIG.TESTTARGET_ID,
-						TESTCONFIG.TESTPROFILE_ID, 
-						TESTCONFIG.METADATA)
-				.values(testConfig.getUserId(), 
-						testConfig.getTestPackageId(), 
-						testConfig.getTestTargetId(),
-						testConfig.getTestProfileId(), 
-						testConfig.getMetadata())
-				.returning(TESTCONFIG.TESTCONFIG_ID).fetchOne().getTestconfigId();
-		mLogger.trace("Added test configuration, new id:" + testConfigID);		
+				.insertInto(TESTCONFIG, TESTCONFIG.USER_ID, TESTCONFIG.TESTSCRIPT_ID, TESTCONFIG.TESTTARGET_ID,
+						TESTCONFIG.TESTPROFILE_ID, TESTCONFIG.METADATA)
+				.values(testConfig.getUserId(), testConfig.getTestScriptId(), testConfig.getTestTargetId(),
+						testConfig.getTestProfileId(), testConfig.getMetadata()).returning(TESTCONFIG.TESTCONFIG_ID)
+				.fetchOne().getTestconfigId();
+		mLogger.trace("Added test configuration, new id:" + testConfigID);
 		return testConfigID;
 	}
 }

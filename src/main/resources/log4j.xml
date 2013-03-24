@@ -11,6 +11,11 @@
 		</layout>
 	</appender>	
 	
+	
+	<logger name="org.jooq">
+		<level value="TRACE" />
+	</logger>
+	
 	<root>
 		<level value="TRACE" />
 		<appender-ref ref="CONSOLE" />

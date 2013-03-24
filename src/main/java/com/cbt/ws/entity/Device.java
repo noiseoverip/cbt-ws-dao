@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.cbt.ws.jooq.enums.DeviceState;
 import com.cbt.ws.jooq.tables.records.DeviceRecord;
+import com.cbt.ws.utils.Utils;
 
 /**
  * Device object entity
@@ -32,7 +33,7 @@ public class Device extends CbtEntity {
 		device.setUserId(record.getUserId());
 		return device;
 	}
-	
+
 	private Long deviceOsId;
 	private Long deviceTypeId;
 	private String deviceUniqueId;
@@ -96,8 +97,13 @@ public class Device extends CbtEntity {
 	public void setState(DeviceState state) {
 		this.state = state;
 	}
-	
+
 	public void setUpdated(Date updated) {
 		this.updated = updated;
+	}
+
+	@Override
+	public String toString() {
+		return Utils.toString("Device", "id", getId(), "serial", serialNumber, "state", state);
 	}
 }

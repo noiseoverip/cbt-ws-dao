@@ -4,24 +4,29 @@ import java.util.List;
 
 import com.cbt.ws.jooq.enums.TestprofileMode;
 
+/**
+ * Entity representing test profile data (mode, device types...)
+ * 
+ * @author SauliusAlisauskas 2013-03-24 Initial version
+ * 
+ */
 public class TestProfile extends CbtEntity {
+	private List<Long> deviceTypes;
 	private TestprofileMode mode;
-	private List<Integer> deviceTypes;
+
+	public List<Long> getDeviceTypes() {
+		return deviceTypes;
+	}
 
 	public TestprofileMode getMode() {
 		return mode;
 	}
 
-	public void setMode(TestprofileMode mode) {
-		this.mode = mode;
-	}
-
-	public List<Integer> getDeviceTypes() {
-		return deviceTypes;
-	}
-
-	public void setDeviceTypes(List<Integer> deviceTypes) {
+	public void setDeviceTypes(List<Long> deviceTypes) {
 		this.deviceTypes = deviceTypes;
 	}
 
+	public void setMode(TestprofileMode mode) {
+		this.mode = mode;
+	}
 }

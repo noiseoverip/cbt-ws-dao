@@ -9,9 +9,16 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.cbt.ws.entity.TestRun;
+import com.cbt.ws.entity.complex.TestRunComplex;
 import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.enums.TestrunStatus;
 
+/**
+ * Unit test for {@link TestRun}
+ * 
+ * @author SauliusAlisauskas 2013-03-24 Initial version
+ *
+ */
 public class TestRunDaoTest {
 	
 	private final Logger mLogger = Logger.getLogger(TestRunDaoTest.class);
@@ -23,6 +30,9 @@ public class TestRunDaoTest {
 		
 		assertNotNull(testRun);
 		assertTrue(testRun.getId() > 0);
+		
+		TestRunComplex complex = dao.getTestRunComplex(testRun.getId());
+		mLogger.info(complex);
 		
 		//Clean up		
 		delete(dao, testRun);		
@@ -64,6 +74,12 @@ public class TestRunDaoTest {
 		return testRun;
 	}
 	
+	/**
+	 * Delete test run
+	 * 
+	 * @param dao
+	 * @param testRun
+	 */
 	private void delete(TestRunDao dao, TestRun testRun) {
 		try {
 			dao.delete(testRun);

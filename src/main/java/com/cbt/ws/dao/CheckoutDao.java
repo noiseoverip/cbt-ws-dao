@@ -2,7 +2,7 @@ package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
 import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
-import static com.cbt.ws.jooq.tables.Testpackage.TESTPACKAGE;
+import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
 import static com.cbt.ws.jooq.tables.Testrun.TESTRUN;
 import static com.cbt.ws.jooq.tables.Testtarget.TESTTARGET;
 
@@ -43,13 +43,8 @@ public class CheckoutDao {
 	}
 	
 	/**
+	 * Get TestPackage info
 	 * 
-	 * Query: SELECT t4.path, t5.path FROM `devicejobs` t1 
-	 *			LEFT JOIN `testrun` t2 ON t1.testrun_id=t2.testrun_id 
-	 *			LEFT JOIN `testconfig` t3 ON t2.testconfig_id = t3.testconfig_id
-	 *			LEFT JOIN `testpackage` t4 ON t3.testpackage_id = t4.testpackage_id
-	 *			LEFT JOIN `testtarget` t5 ON t3.testpackage_id = t5.testtarget_id
-	 *			WHERE t1.devicejob_id=1	
 	 * @param devicejobId
 	 * @return
 	 */
@@ -59,15 +54,17 @@ public class CheckoutDao {
 		Record result = sqexec.select().from(DEVICE_JOB)
 				.join(TESTRUN).on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.TESTRUN_ID))
 				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
-				.join(TESTPACKAGE).on(TESTPACKAGE.TESTPACKAGE_ID.eq(TESTCONFIG.TESTPACKAGE_ID))
+				.join(TESTSCRIPT).on(TESTSCRIPT.TESTSCRIPT_ID.eq(TESTCONFIG.TESTSCRIPT_ID))
 				.join(TESTTARGET).on(TESTTARGET.TESTTARGET_ID.eq(TESTCONFIG.TESTTARGET_ID))
 				.where(DEVICE_JOB.DEVICEJOB_ID.eq(devicejobId))
 				.fetchOne();
 		
 		TestPackage tp = new TestPackage();
 		tp.setDevicejobId(devicejobId);
-		tp.setTestScriptPath(result.getValue(TESTPACKAGE.PATH));
+		tp.setTestScriptPath(result.getValue(TESTSCRIPT.PATH));
 		tp.setTestTargetPath(result.getValue(TESTTARGET.PATH));
+		tp.setTestScriptFileName(result.getValue(TESTSCRIPT.FILENAME));
+		tp.setTestTargetFileName(result.getValue(TESTTARGET.FILENAME));
 		return tp;
 	}	
 	

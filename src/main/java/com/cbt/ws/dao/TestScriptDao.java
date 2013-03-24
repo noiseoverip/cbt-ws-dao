@@ -1,6 +1,6 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.Testpackage.TESTPACKAGE;
+import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import org.jooq.impl.Executor;
 
 import com.cbt.ws.annotations.TestFileStorePath;
 import com.cbt.ws.entity.TestScript;
-import com.cbt.ws.jooq.tables.records.TestpackageRecord;
+import com.cbt.ws.jooq.tables.records.TestscriptRecord;
 import com.cbt.ws.mysql.Db;
 import com.cbt.ws.utils.Utils;
 
@@ -30,61 +30,15 @@ import com.cbt.ws.utils.Utils;
  */
 public class TestScriptDao {
 
-	private String mTestScriptStorePath;
-
 	private final Logger mLogger = Logger.getLogger(TestScriptDao.class);
+
+	private String mTestScriptStorePath;
 
 	@Inject
 	public TestScriptDao(@TestFileStorePath String testPackageStorePath) {
 		mTestScriptStorePath = testPackageStorePath;
 	}
 	
-	/**
-	 * Get all test packages
-	 * 
-	 * @return
-	 */
-	public TestScript[] getAll() {
-		List<TestScript> packages = new ArrayList<TestScript>();
-		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(TESTPACKAGE).fetch();
-		for (Record r : result) {
-			TestScript tp = new TestScript();
-			tp.setId(r.getValue(TESTPACKAGE.TESTPACKAGE_ID));
-			tp.setFilePath(r.getValue(TESTPACKAGE.PATH));
-			tp.setMetadata(r.getValue(TESTPACKAGE.METADATA));
-			packages.add(tp);
-			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
-		}
-		return packages.toArray(new TestScript[packages.size()]);
-	}
-
-	/**
-	 * Save test package
-	 * 
-	 * @param testPackage
-	 * @param uploadedInputStream
-	 * @throws IOException
-	 */
-	public void storeTestPackage(TestScript testPackage, InputStream uploadedInputStream) throws IOException {
-		// Create new test package record in db -> get it's id
-		Long newTestPackageId = createNewTestPackageRecord(testPackage.getUserId());
-		mLogger.debug("Generated new id for test package:" + newTestPackageId);
-
-		// Create appropriate folder structure to store the file
-		testPackage.setId(newTestPackageId);
-		String testPackagePath = createTestPackageFolder(newTestPackageId, testPackage.getUserId());
-
-		// Store the file
-		// TODO: manage file names better
-		String filePath = testPackagePath + "//" + "uiautomator.jar";
-		Utils.writeToFile(uploadedInputStream, filePath);
-
-		// Update test package path and other info
-		testPackage.setFilePath(filePath);
-		updateTestPackage(testPackage);
-	}
-
 	/**
 	 * Create new TestPackage record mainly to generate new id
 	 * 
@@ -93,9 +47,9 @@ public class TestScriptDao {
 	 */
 	private Long createNewTestPackageRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		TestpackageRecord result = sqexec.insertInto(TESTPACKAGE, TESTPACKAGE.USER_ID).values(userid)
-				.returning(TESTPACKAGE.TESTPACKAGE_ID).fetchOne();
-		return result.getTestpackageId();
+		TestscriptRecord result = sqexec.insertInto(TESTSCRIPT, TESTSCRIPT.USER_ID).values(userid)
+				.returning(TESTSCRIPT.TESTSCRIPT_ID).fetchOne();
+		return result.getTestscriptId();
 	}
 
 	/**
@@ -107,7 +61,7 @@ public class TestScriptDao {
 	 */
 	private String createTestPackageFolder(Long packagId, Long userId) {
 		// create user folder if not existing
-		String path = mTestScriptStorePath + userId + "//tp-" + packagId;
+		String path = mTestScriptStorePath + userId + "//ts-" + packagId;
 		if (new File(path).mkdirs()) {
 			mLogger.info("New folder created:" + path);
 			return path;
@@ -116,18 +70,66 @@ public class TestScriptDao {
 	}
 
 	/**
+	 * Get all test packages
+	 * 
+	 * @return
+	 */
+	public TestScript[] getAll() {
+		List<TestScript> packages = new ArrayList<TestScript>();
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Result<Record> result = sqexec.select().from(TESTSCRIPT).fetch();
+		for (Record r : result) {
+			TestScript tp = new TestScript();
+			tp.setId(r.getValue(TESTSCRIPT.TESTSCRIPT_ID));
+			tp.setFilePath(r.getValue(TESTSCRIPT.PATH));
+			tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
+			tp.setMetadata(r.getValue(TESTSCRIPT.METADATA));
+			packages.add(tp);
+			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
+		}
+		return packages.toArray(new TestScript[packages.size()]);
+	}
+
+	/**
+	 * Save test package
+	 * 
+	 * @param testScript
+	 * @param uploadedInputStream
+	 * @throws IOException
+	 */
+	public void storeTestScript(TestScript testScript, InputStream uploadedInputStream) throws IOException {
+		// Create new test package record in db -> get it's id
+		Long newTestPackageId = createNewTestPackageRecord(testScript.getUserId());
+		mLogger.debug("Generated new id for test package:" + newTestPackageId);
+
+		// Create appropriate folder structure to store the file
+		testScript.setId(newTestPackageId);
+		String testPackagePath = createTestPackageFolder(newTestPackageId, testScript.getUserId());
+
+		// Store the file
+		// TODO: manage file names better
+		String fileName = "uiautomator-" + testScript.getId() + ".jar";
+		String filePath = testPackagePath + "//" + fileName;
+		Utils.writeToFile(uploadedInputStream, filePath);
+
+		// Update test package path and other info
+		testScript.setFilePath(filePath);
+		testScript.setFileName(fileName);
+		updateTestScript(testScript);
+	}
+
+	/**
 	 * Update test package information
 	 * 
-	 * @param testPackage
+	 * @param testScript
 	 */
-	private void updateTestPackage(TestScript testPackage) {
+	private void updateTestScript(TestScript testScript) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-
-		if (sqexec.update(TESTPACKAGE).set(TESTPACKAGE.PATH, testPackage.getFilePath())
-				.where(TESTPACKAGE.TESTPACKAGE_ID.eq(testPackage.getId())).execute() != 1) {
-			mLogger.error("Failed to update package:" + testPackage);
+		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getFilePath()).set(TESTSCRIPT.FILENAME, testScript.getFileName())
+				.where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScript.getId())).execute() != 1) {
+			mLogger.error("Failed to update package:" + testScript);
 		} else {
-			mLogger.debug("Test package updated:" + testPackage);
+			mLogger.debug("Test package updated:" + testScript);
 		}
 	}
 }

@@ -1,5 +1,8 @@
 package com.cbt.ws.dao;
 
+import static com.cbt.ws.jooq.tables.Testconfig.TESTCONFIG;
+import static com.cbt.ws.jooq.tables.Testprofile.TESTPROFILE;
+import static com.cbt.ws.jooq.tables.TestprofileDevices.TESTPROFILE_DEVICES;
 import static com.cbt.ws.jooq.tables.Testrun.TESTRUN;
 
 import java.sql.Timestamp;
@@ -14,6 +17,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.TestRun;
+import com.cbt.ws.entity.complex.TestRunComplex;
 import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.tables.records.TestrunRecord;
 import com.cbt.ws.mysql.Db;
@@ -27,6 +31,38 @@ import com.cbt.ws.mysql.Db;
 public class TestRunDao {
 
 	private final Logger mLogger = Logger.getLogger(TestRunDao.class);
+
+	/**
+	 * Add new test run
+	 * 
+	 * @param userid
+	 * @return
+	 */
+	public Long add(TestRun testRun) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		mLogger.trace("Starting new test run");
+		Long testRunId = sqexec
+				.insertInto(TESTRUN, TESTRUN.USER_ID, TESTRUN.TESTCONFIG_ID, TESTRUN.CREATED)
+				.values(testRun.getUserId(), testRun.getTestConfigId(),
+						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(TESTRUN.TESTRUN_ID)
+				.fetchOne().getTestrunId();
+		mLogger.trace("Added test run, new id:" + testRunId);
+		return testRunId;
+	}
+
+	/**
+	 * Delete testRun
+	 * 
+	 * @param testRun
+	 * @throws CbtDaoException
+	 */
+	public void delete(TestRun testRun) throws CbtDaoException {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		int result = sqexec.delete(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRun.getId())).execute();
+		if (result != 1) {
+			throw new CbtDaoException("Error while deleting device, result:" + result);
+		}
+	}
 
 	/**
 	 * Get test runs
@@ -52,21 +88,46 @@ public class TestRunDao {
 	}
 
 	/**
-	 * Add new test run
+	 * Get TestRun
 	 * 
-	 * @param userid
+	 * @param testRunId
 	 * @return
 	 */
-	public Long add(TestRun testRun) {
+	public TestRun getTestRun(Long testRunId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		mLogger.trace("Starting new test run");
-		Long testRunId = sqexec
-				.insertInto(TESTRUN, TESTRUN.USER_ID, TESTRUN.TESTCONFIG_ID, TESTRUN.CREATED)
-				.values(testRun.getUserId(), testRun.getTestConfigId(),
-						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(TESTRUN.TESTRUN_ID)
-				.fetchOne().getTestrunId();
-		mLogger.trace("Added test run, new id:" + testRunId);
-		return testRunId;
+		TestrunRecord record = (TestrunRecord) sqexec.select().from(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRunId))
+				.fetchOne();
+		return TestRun.fromJooqRecord(record);
+	}
+	
+	/**
+	 * Get Test more complex test run information
+	 * 
+	 * @param testRunId
+	 * @return
+	 */
+	public TestRunComplex getTestRunComplex(Long testRunId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Record result = sqexec.select().from(TESTRUN)				
+				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
+				.join(TESTPROFILE).on(TESTPROFILE.TESTPROFILE_ID.eq(TESTCONFIG.TESTPROFILE_ID))
+				.where(TESTRUN.TESTRUN_ID.eq(testRunId))
+				.fetchOne();
+		
+		TestRunComplex testRun = new TestRunComplex();
+		testRun.setTestConfigId(result.getValue(TESTCONFIG.TESTCONFIG_ID));
+		testRun.setTestProfileId(result.getValue(TESTPROFILE.TESTPROFILE_ID));
+		
+		// Construct device type list
+		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)				
+				.where(TESTPROFILE_DEVICES.TESTPROFILE_ID.eq(testRun.getTestProfileId()))
+				.fetch();
+		List<Long> deviceTypes = new ArrayList<Long>(resultDeviceTypes.size());
+		for (Record r : resultDeviceTypes) {			
+			deviceTypes.add(r.getValue(TESTPROFILE_DEVICES.DEVICE_TYPE_ID));
+		}
+		testRun.setDeviceTypes(deviceTypes);
+		return testRun;
 	}
 
 	/**
@@ -82,33 +143,6 @@ public class TestRunDao {
 
 		if (count != 1) {
 			throw new CbtDaoException("Could not update device");
-		}
-	}
-
-	/**
-	 * Get TestRun
-	 * 
-	 * @param testRunId
-	 * @return
-	 */
-	public TestRun getTestRun(Long testRunId) {
-		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		TestrunRecord record = (TestrunRecord) sqexec.select().from(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRunId))
-				.fetchOne();
-		return TestRun.fromJooqRecord(record);
-	}
-
-	/**
-	 * Delete testRun
-	 * 
-	 * @param testRun
-	 * @throws CbtDaoException
-	 */
-	public void delete(TestRun testRun) throws CbtDaoException {
-		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int result = sqexec.delete(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRun.getId())).execute();
-		if (result != 1) {
-			throw new CbtDaoException("Error while deleting device, result:" + result);
 		}
 	}
 }

@@ -2,7 +2,14 @@ package com.cbt.ws.entity;
 
 import com.cbt.ws.jooq.enums.TestrunStatus;
 import com.cbt.ws.jooq.tables.records.TestrunRecord;
+import com.cbt.ws.utils.Utils;
 
+/**
+ * Entity representing single test run information (configuration id, status...)
+ * 
+ * @author SauliusAlisauskas 2013-03-24 Initial version
+ * 
+ */
 public class TestRun extends CbtEntity {
 	private Long testConfigId;
 	private TestrunStatus status;
@@ -35,7 +42,12 @@ public class TestRun extends CbtEntity {
 	public void setStatus(TestrunStatus status) {
 		this.status = status;
 	}
-	
+
+	@Override
+	public String toString() {
+		return Utils.toString("TestRun", "id", getId(), "testConfigId", testConfigId, "status", status);
+	}
+
 	@Override
 	public boolean equals(Object object) {
 		if (null != object && object instanceof TestRun) {
@@ -47,5 +59,4 @@ public class TestRun extends CbtEntity {
 		}
 		return false;
 	}
-
 }

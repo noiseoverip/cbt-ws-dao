@@ -48,6 +48,26 @@ public class DevicejobDao {
 	}
 	
 	/**
+	 * Delete deviceJob
+	 * 
+	 * @param deviceJob
+	 * @throws CbtDaoException
+	 */
+	public void delete(DeviceJob deviceJob) throws CbtDaoException {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		mLogger.trace("Updating deviceJob");
+		int count = sqexec
+				.delete(DEVICE_JOB)				
+				.where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+		
+		if (count != 1) {
+			mLogger.error("Could delete deviceJob:" + deviceJob);
+			throw new CbtDaoException("Could not update deviceJob");
+		}
+		mLogger.trace("Deleted job, result: " + count);		
+	}
+
+	/**
 	 * Get device jobs
 	 * 
 	 * @return
@@ -57,19 +77,31 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(DEVICE_JOB).fetch();
 		for (Record r : result) {
-			DeviceJob tc = new DeviceJob();
-			tc.setId(r.getValue(DEVICE_JOB.DEVICEJOB_ID));
-			tc.setDeviceId(r.getValue(DEVICE_JOB.DEVICE_ID));
-			tc.setTestRunId(r.getValue(DEVICE_JOB.TESTRUN_ID));
-			tc.setCreated(r.getValue(DEVICE_JOB.CREATED));
-			tc.setUpdated(r.getValue(DEVICE_JOB.UPDATED));
-			tc.setStatus(r.getValue(DEVICE_JOB.STATUS));
+			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord)r);			
 			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
 		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
 	}
-
+	
+	/**
+	 * Get devicesjobs of specified test run
+	 * 
+	 * @param testRunId
+	 * @return
+	 */
+	public DeviceJob[] getByTestRunId(Long testRunId) {
+		List<DeviceJob> testExecutions = new ArrayList<DeviceJob>();
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Result<Record> result = sqexec.select().from(DEVICE_JOB).where(DEVICE_JOB.TESTRUN_ID.eq(testRunId)).fetch();
+		for (Record r : result) {
+			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord)r);			
+			testExecutions.add(tc);
+			mLogger.debug(tc);
+		}
+		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
+	}
+	
 	/**
 	 * Get oldest job with status WAITING
 	 * 

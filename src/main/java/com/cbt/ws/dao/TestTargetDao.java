@@ -1,5 +1,6 @@
 package com.cbt.ws.dao;
 
+import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
 import static com.cbt.ws.jooq.tables.Testtarget.TESTTARGET;
 
 import java.io.File;
@@ -30,59 +31,13 @@ import com.cbt.ws.utils.Utils;
  */
 public class TestTargetDao {
 
-	private final Logger mLogger = Logger.getLogger(TestTargetDao.class);
-
 	private String mFileStorePath;
+
+	private final Logger mLogger = Logger.getLogger(TestTargetDao.class);
 
 	@Inject
 	public TestTargetDao(@TestFileStorePath String testFileStorePath) {
 		mFileStorePath = testFileStorePath;
-	}
-
-	/**
-	 * Get all test targets
-	 * 
-	 * @return
-	 */
-	public TestTarget[] getAll() {
-		List<TestTarget> applications = new ArrayList<TestTarget>();
-		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(TESTTARGET).fetch();
-		for (Record r : result) {
-			TestTarget tp = new TestTarget();
-			tp.setId(r.getValue(TESTTARGET.TESTTARGET_ID));
-			tp.setFilePath(r.getValue(TESTTARGET.PATH));
-			tp.setMetadata(r.getValue(TESTTARGET.METADATA));
-			applications.add(tp);
-			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
-		}
-		return applications.toArray(new TestTarget[applications.size()]);
-	}
-
-	/**
-	 * Save test target
-	 * 
-	 * @param testTarget
-	 * @param uploadedInputStream
-	 * @throws IOException
-	 */
-	public void storeTestTarget(TestTarget testTarget, InputStream uploadedInputStream) throws IOException {
-		// Create new test package record in db -> get it's id
-		Long newTestPackageId = createNewTestPackageRecord(testTarget.getUserId());
-		mLogger.debug("Generated new id for test package:" + newTestPackageId);
-
-		// Create appropriate folder structure to store the file
-		testTarget.setId(newTestPackageId);
-		String testPackagePath = createTestTargetFolder(newTestPackageId, testTarget.getUserId());
-
-		// Store the file
-		// TODO: manage file names better
-		String filePath = testPackagePath + "//app-" + testTarget.getId() + ".apk";
-		Utils.writeToFile(uploadedInputStream, filePath);
-
-		// Update path and other info
-		testTarget.setFilePath(filePath);
-		updateTestTarget(testTarget);
 	}
 
 	/**
@@ -116,6 +71,55 @@ public class TestTargetDao {
 	}
 
 	/**
+	 * Get all test targets
+	 * 
+	 * @return
+	 */
+	public TestTarget[] getAll() {
+		List<TestTarget> applications = new ArrayList<TestTarget>();
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Result<Record> result = sqexec.select().from(TESTTARGET).fetch();
+		for (Record r : result) {
+			TestTarget tp = new TestTarget();
+			tp.setId(r.getValue(TESTTARGET.TESTTARGET_ID));
+			tp.setFilePath(r.getValue(TESTTARGET.PATH));
+			tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
+			tp.setMetadata(r.getValue(TESTTARGET.METADATA));
+			applications.add(tp);
+			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
+		}
+		return applications.toArray(new TestTarget[applications.size()]);
+	}
+
+	/**
+	 * Save test target
+	 * 
+	 * @param testTarget
+	 * @param uploadedInputStream
+	 * @throws IOException
+	 */
+	public void storeTestTarget(TestTarget testTarget, InputStream uploadedInputStream) throws IOException {
+		// Create new test package record in db -> get it's id
+		Long newTestPackageId = createNewTestPackageRecord(testTarget.getUserId());
+		mLogger.debug("Generated new id for test package:" + newTestPackageId);
+
+		// Create appropriate folder structure to store the file
+		testTarget.setId(newTestPackageId);
+		String testPackagePath = createTestTargetFolder(newTestPackageId, testTarget.getUserId());
+
+		// Store the file
+		// TODO: manage file names better
+		String fileName = "app-" + testTarget.getId() + ".apk";
+		String filePath = testPackagePath + "//" + fileName;
+		Utils.writeToFile(uploadedInputStream, filePath);
+
+		// Update path and other info
+		testTarget.setFilePath(filePath);
+		testTarget.setFileName(fileName);
+		updateTestTarget(testTarget);
+	}
+
+	/**
 	 * Update test target information
 	 * 
 	 * @param testTarget
@@ -123,7 +127,7 @@ public class TestTargetDao {
 	private void updateTestTarget(TestTarget testTarget) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 
-		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getFilePath())
+		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getFilePath()).set(TESTTARGET.FILENAME, testTarget.getFileName())
 				.where(TESTTARGET.TESTTARGET_ID.eq(testTarget.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testTarget);
 		} else {
