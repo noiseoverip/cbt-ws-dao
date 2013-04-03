@@ -72,7 +72,7 @@ public class TestRunDao {
 	public TestRun[] getAll() {
 		List<TestRun> testRuns = new ArrayList<TestRun>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(TESTRUN).fetch();
+		Result<Record> result = sqexec.select().from(TESTRUN).orderBy(TESTRUN.CREATED.desc()).fetch();
 		for (Record r : result) {
 			TestRun tr = new TestRun();
 			tr.setId(r.getValue(TESTRUN.TESTRUN_ID));
@@ -124,7 +124,7 @@ public class TestRunDao {
 				.fetch();
 		List<Long> deviceTypes = new ArrayList<Long>(resultDeviceTypes.size());
 		for (Record r : resultDeviceTypes) {			
-			deviceTypes.add(r.getValue(TESTPROFILE_DEVICES.DEVICE_TYPE_ID));
+			deviceTypes.add(r.getValue(TESTPROFILE_DEVICES.DEVICETYPE_ID));
 		}
 		testRun.setDeviceTypes(deviceTypes);
 		return testRun;

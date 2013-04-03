@@ -26,7 +26,7 @@ import com.cbt.ws.utils.Utils;
  * Test package DAO
  * 
  * @author SauliusALisauskas 2013-03-03 Initial version
- *
+ * 
  */
 public class TestScriptDao {
 
@@ -38,14 +38,14 @@ public class TestScriptDao {
 	public TestScriptDao(@TestFileStorePath String testPackageStorePath) {
 		mTestScriptStorePath = testPackageStorePath;
 	}
-	
+
 	/**
 	 * Create new TestPackage record mainly to generate new id
 	 * 
 	 * @param userid
 	 * @return
 	 */
-	private Long createNewTestPackageRecord(Long userid) {
+	private Long createNewTestScriptRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		TestscriptRecord result = sqexec.insertInto(TESTSCRIPT, TESTSCRIPT.USER_ID).values(userid)
 				.returning(TESTSCRIPT.TESTSCRIPT_ID).fetchOne();
@@ -79,13 +79,9 @@ public class TestScriptDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTSCRIPT).fetch();
 		for (Record r : result) {
-			TestScript tp = new TestScript();
-			tp.setId(r.getValue(TESTSCRIPT.TESTSCRIPT_ID));
-			tp.setFilePath(r.getValue(TESTSCRIPT.PATH));
-			tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
-			tp.setMetadata(r.getValue(TESTSCRIPT.METADATA));
-			packages.add(tp);
-			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
+			TestScript ts = TestScript.fromJooq(r);
+			packages.add(ts);
+			mLogger.debug("ID: " + ts.getId() + " path: " + ts.getFilePath() + " metadata: " + ts.getMetadata());
 		}
 		return packages.toArray(new TestScript[packages.size()]);
 	}
@@ -99,7 +95,7 @@ public class TestScriptDao {
 	 */
 	public void storeTestScript(TestScript testScript, InputStream uploadedInputStream) throws IOException {
 		// Create new test package record in db -> get it's id
-		Long newTestPackageId = createNewTestPackageRecord(testScript.getUserId());
+		Long newTestPackageId = createNewTestScriptRecord(testScript.getUserId());
 		mLogger.debug("Generated new id for test package:" + newTestPackageId);
 
 		// Create appropriate folder structure to store the file
@@ -125,7 +121,8 @@ public class TestScriptDao {
 	 */
 	private void updateTestScript(TestScript testScript) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getFilePath()).set(TESTSCRIPT.FILENAME, testScript.getFileName())
+		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getFilePath())
+				.set(TESTSCRIPT.FILENAME, testScript.getFileName()).set(TESTSCRIPT.NAME, testScript.getName())
 				.where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScript.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testScript);
 		} else {

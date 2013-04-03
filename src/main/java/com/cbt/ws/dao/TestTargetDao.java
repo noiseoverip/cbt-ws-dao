@@ -1,6 +1,5 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
 import static com.cbt.ws.jooq.tables.Testtarget.TESTTARGET;
 
 import java.io.File;
@@ -80,11 +79,7 @@ public class TestTargetDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTTARGET).fetch();
 		for (Record r : result) {
-			TestTarget tp = new TestTarget();
-			tp.setId(r.getValue(TESTTARGET.TESTTARGET_ID));
-			tp.setFilePath(r.getValue(TESTTARGET.PATH));
-			tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
-			tp.setMetadata(r.getValue(TESTTARGET.METADATA));
+			TestTarget tp = TestTarget.fromJooq(r);
 			applications.add(tp);
 			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
 		}
@@ -127,7 +122,8 @@ public class TestTargetDao {
 	private void updateTestTarget(TestTarget testTarget) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 
-		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getFilePath()).set(TESTTARGET.FILENAME, testTarget.getFileName())
+		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getFilePath())
+				.set(TESTTARGET.FILENAME, testTarget.getFileName()).set(TESTTARGET.NAME, testTarget.getName())
 				.where(TESTTARGET.TESTTARGET_ID.eq(testTarget.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testTarget);
 		} else {

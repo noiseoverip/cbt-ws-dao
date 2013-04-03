@@ -1,5 +1,9 @@
 package com.cbt.ws.entity;
 
+import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
+
+import org.jooq.Record;
+
 import com.cbt.ws.utils.Utils;
 
 /**
@@ -11,7 +15,17 @@ import com.cbt.ws.utils.Utils;
 public class TestScript extends CbtEntity {
 	private String filePath;
 	private String fileName;
-
+	
+	public static TestScript fromJooq(Record r) {
+		TestScript tp = new TestScript();
+		tp.setId(r.getValue(TESTSCRIPT.TESTSCRIPT_ID));
+		tp.setName(r.getValue(TESTSCRIPT.NAME));
+		tp.setFilePath(r.getValue(TESTSCRIPT.PATH));
+		tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
+		tp.setMetadata(r.getValue(TESTSCRIPT.METADATA));
+		return tp;
+	}
+	
 	public String getFileName() {
 		return fileName;
 	}

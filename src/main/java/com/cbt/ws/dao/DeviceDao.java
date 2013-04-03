@@ -2,6 +2,8 @@ package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.Device.DEVICE;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 
 import org.jooq.Record;
@@ -18,7 +20,7 @@ import com.cbt.ws.mysql.Db;
  * DAO for device related data operations
  * 
  * @author SauliusAlisauskas 2013-03-05 Initial version
- *
+ * 
  */
 public class DeviceDao {
 
@@ -92,13 +94,31 @@ public class DeviceDao {
 		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.DEVICETYPE_ID.eq(deviceType)).fetch()
 				.map(new RecordMapper<Record, Device>() {
 					@Override
-					public Device map(Record record) {						
-						return Device.fromJooqRecord((DeviceRecord)record);
+					public Device map(Record record) {
+						return Device.fromJooqRecord((DeviceRecord) record);
 					}
 				});
 		return devices;
 	}
-	
+
+	/**
+	 * Get devices by user id
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	public List<Device> getDevicesByUser(Long userId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.USER_ID.eq(userId)).fetch()
+				.map(new RecordMapper<Record, Device>() {
+					@Override
+					public Device map(Record record) {
+						return Device.fromJooqRecord((DeviceRecord) record);
+					}
+				});
+		return devices;
+	}
+
 	/**
 	 * Update device (status, type)
 	 * 
@@ -109,6 +129,7 @@ public class DeviceDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		int count = sqexec.update(DEVICE).set(DEVICE.DEVICETYPE_ID, device.getDeviceTypeId())
 				.set(DEVICE.DEVICEOS_ID, device.getDeviceOsId()).set(DEVICE.STATE, device.getState())
+				.set(DEVICE.UPDATED, new Timestamp(Calendar.getInstance().getTimeInMillis()))
 				.where(DEVICE.DEVICE_ID.eq(device.getId())).execute();
 		if (count != 1) {
 			throw new CbtDaoException("Could not update device");

@@ -28,6 +28,7 @@ public class Device extends CbtEntity {
 		device.setDeviceOsId(record.getDeviceosId());
 		device.setDeviceTypeId(record.getDevicetypeId());
 		device.setDeviceUniqueId(record.getDeviceuniqueId());
+		device.setSerialNumber(record.getSerialnumber());
 		device.setState(record.getState());
 		device.setUpdated(record.getUpdated());
 		device.setUserId(record.getUserId());

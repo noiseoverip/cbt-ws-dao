@@ -9,6 +9,15 @@ public abstract class CbtEntity {
 	private String username;
 	private Date updated;
 	private Date created;
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public Date getCreated() {
 		return created;

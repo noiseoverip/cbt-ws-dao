@@ -44,7 +44,7 @@ public class TestProfileDao {
 			mLogger.trace("Addign device id");
 			// TODO: improve performance here
 			sqexec.insertInto(TESTPROFILE_DEVICES, TESTPROFILE_DEVICES.TESTPROFILE_ID,
-					TESTPROFILE_DEVICES.DEVICE_TYPE_ID).values(TESTPROFILEID, deviceTypeId).execute();
+					TESTPROFILE_DEVICES.DEVICETYPE_ID).values(TESTPROFILEID, deviceTypeId).execute();
 		}
 		return TESTPROFILEID;
 	}
@@ -57,15 +57,16 @@ public class TestProfileDao {
 	public TestProfile[] getAll() {
 		List<TestProfile> testProfiles = new ArrayList<TestProfile>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(TESTPROFILE).fetch();
+		Result<Record> result = sqexec.select().from(TESTPROFILE).orderBy(TESTPROFILE.UPDATED.desc()).fetch();
 		for (Record r : result) {
-			TestProfile tc = new TestProfile();
-			tc.setId(r.getValue(TESTPROFILE.TESTPROFILE_ID));
-			tc.setUserId(r.getValue(TESTPROFILE.USER_ID));
-			tc.setMode(r.getValue(TESTPROFILE.MODE));
-			tc.setMetadata(r.getValue(TESTPROFILE.METADATA));
-			testProfiles.add(tc);
-			mLogger.debug(tc);
+			TestProfile tp = new TestProfile();
+			tp.setId(r.getValue(TESTPROFILE.TESTPROFILE_ID));
+			tp.setName(r.getValue(TESTPROFILE.NAME));
+			tp.setUserId(r.getValue(TESTPROFILE.USER_ID));
+			tp.setMode(r.getValue(TESTPROFILE.MODE));
+			tp.setMetadata(r.getValue(TESTPROFILE.METADATA));
+			testProfiles.add(tp);
+			mLogger.debug(tp);
 		}
 		return testProfiles.toArray(new TestProfile[testProfiles.size()]);
 	}
