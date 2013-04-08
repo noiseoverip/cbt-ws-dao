@@ -38,15 +38,15 @@ public class DevicejobDao {
 	public Long add(DeviceJob deviceJob) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new device job");
-		Long testConfigID = sqexec
+		Long deviceJobId = sqexec
 				.insertInto(DEVICE_JOB, DEVICE_JOB.DEVICE_ID, DEVICE_JOB.TESTRUN_ID, DEVICE_JOB.CREATED)
 				.values(deviceJob.getDeviceId(), deviceJob.getTestRunId(),
 						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICE_JOB.DEVICEJOB_ID)
 				.fetchOne().getDevicejobId();
-		mLogger.trace("Added device job, new id:" + testConfigID);
-		return testConfigID;
+		mLogger.trace("Added device job, new id:" + deviceJobId);
+		return deviceJobId;
 	}
-	
+
 	/**
 	 * Delete deviceJob
 	 * 
@@ -56,15 +56,13 @@ public class DevicejobDao {
 	public void delete(DeviceJob deviceJob) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Updating deviceJob");
-		int count = sqexec
-				.delete(DEVICE_JOB)				
-				.where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
-		
+		int count = sqexec.delete(DEVICE_JOB).where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+
 		if (count != 1) {
 			mLogger.error("Could delete deviceJob:" + deviceJob);
 			throw new CbtDaoException("Could not update deviceJob");
 		}
-		mLogger.trace("Deleted job, result: " + count);		
+		mLogger.trace("Deleted job, result: " + count);
 	}
 
 	/**
@@ -77,13 +75,13 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(DEVICE_JOB).fetch();
 		for (Record r : result) {
-			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord)r);			
+			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord) r);
 			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
 		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
 	}
-	
+
 	/**
 	 * Get devicesjobs of specified test run
 	 * 
@@ -95,13 +93,13 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(DEVICE_JOB).where(DEVICE_JOB.TESTRUN_ID.eq(testRunId)).fetch();
 		for (Record r : result) {
-			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord)r);			
+			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord) r);
 			testExecutions.add(tc);
 			mLogger.debug(tc);
 		}
 		return testExecutions.toArray(new DeviceJob[testExecutions.size()]);
 	}
-	
+
 	/**
 	 * Get oldest job with status WAITING
 	 * 
@@ -112,28 +110,39 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
 				.where(DEVICE_JOB.DEVICE_ID.eq(deviceId).and(DEVICE_JOB.STATUS.eq(DeviceJobStatus.WAITING)))
-				.orderBy(DEVICE_JOB.CREATED.asc()).limit(0, 1).fetchOne();		
+				.orderBy(DEVICE_JOB.CREATED.asc()).limit(0, 1).fetchOne();
 		return DeviceJob.fromJooqRecord(record);
 	}
-	
+
 	/**
 	 * Update deviceJob, we should only need to update: state
 	 * 
 	 * @param deviceJob
-	 * @throws CbtDaoException 
+	 * @throws CbtDaoException
 	 */
 	public void update(DeviceJob deviceJob) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Updating deviceJob");
-		int count = sqexec
-				.update(DEVICE_JOB)
-				.set(DEVICE_JOB.STATUS, deviceJob.getStatus())
+		int count = sqexec.update(DEVICE_JOB).set(DEVICE_JOB.STATUS, deviceJob.getStatus())
 				.where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
-		
+
 		if (count != 1) {
 			mLogger.error("Could not update deviceJob:" + deviceJob);
 			throw new CbtDaoException("Could not update deviceJob");
 		}
-		mLogger.trace("Updated device job, result: " + count);		
+		mLogger.trace("Updated device job, result: " + count);
+	}
+	
+	/**
+	 * Get device job by id
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public DeviceJob getById(Long id) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
+				.where(DEVICE_JOB.DEVICEJOB_ID.eq(id)).fetchOne();
+		return DeviceJob.fromJooqRecord(record);
 	}
 }
