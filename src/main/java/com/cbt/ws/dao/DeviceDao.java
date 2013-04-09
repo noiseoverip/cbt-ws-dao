@@ -1,13 +1,18 @@
 package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.Device.DEVICE;
+import static com.cbt.ws.jooq.tables.DeviceSharing.DEVICE_SHARING;
+import static com.cbt.ws.jooq.tables.User.USER;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.jooq.Record;
+import org.jooq.Record2;
 import org.jooq.RecordMapper;
+import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
@@ -119,6 +124,13 @@ public class DeviceDao {
 		return devices;
 	}
 
+	public List<Map<String, Object>> getSharedWith(Long deviceId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Result<Record2<Long, String>> result = sqexec.select(USER.USER_ID, USER.NAME).from(USER).join(DEVICE_SHARING)
+				.on(DEVICE_SHARING.USER_ID.eq(USER.USER_ID)).where(DEVICE_SHARING.DEVICE_ID.eq(deviceId)).fetch();
+		return result.intoMaps();
+	}
+
 	/**
 	 * Update device (status, type)
 	 * 
@@ -134,5 +146,17 @@ public class DeviceDao {
 		if (count != 1) {
 			throw new CbtDaoException("Could not update device");
 		}
+	}
+
+	/**
+	 * Add device sharing record
+	 * 
+	 * @param deviceId
+	 * @param userId
+	 */
+	public void addSharing(Long deviceId, Long userId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		sqexec.insertInto(DEVICE_SHARING, DEVICE_SHARING.DEVICE_ID, DEVICE_SHARING.USER_ID)
+				.values(deviceId, userId).execute();
 	}
 }

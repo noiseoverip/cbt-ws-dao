@@ -1,6 +1,5 @@
 package com.cbt.ws.dao;
 
-import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
 import static com.cbt.ws.jooq.tables.DeviceJobResult.DEVICE_JOB_RESULT;
 
 import java.util.ArrayList;
@@ -12,11 +11,9 @@ import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
-import com.cbt.ws.entity.DeviceJob;
 import com.cbt.ws.entity.DeviceJobResult;
 import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.enums.DeviceJobResultState;
-import com.cbt.ws.jooq.tables.records.DeviceJobRecord;
 import com.cbt.ws.jooq.tables.records.DeviceJobResultRecord;
 import com.cbt.ws.mysql.Db;
 
