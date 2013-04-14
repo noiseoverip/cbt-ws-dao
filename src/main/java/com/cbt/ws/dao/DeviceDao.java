@@ -43,8 +43,8 @@ public class DeviceDao {
 				.insertInto(DEVICE, DEVICE.USER_ID, DEVICE.SERIALNUMBER, DEVICE.DEVICEUNIQUE_ID, DEVICE.DEVICETYPE_ID,
 						DEVICE.DEVICEOS_ID)
 				.values(device.getUserId(), device.getSerialNumber(), device.getDeviceUniqueId(),
-						device.getDeviceTypeId(), device.getDeviceOsId()).returning(DEVICE.DEVICE_ID).fetchOne()
-				.getDeviceId();
+						device.getDeviceTypeId(), device.getDeviceOsId()).returning(DEVICE.ID).fetchOne()
+				.getId();
 		return newDeviceId;
 	}
 
@@ -56,7 +56,7 @@ public class DeviceDao {
 	 */
 	public void deleteDevice(Long deviceId) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int result = sqexec.delete(DEVICE).where(DEVICE.DEVICE_ID.eq(deviceId)).execute();
+		int result = sqexec.delete(DEVICE).where(DEVICE.ID.eq(deviceId)).execute();
 		if (result != 1) {
 			throw new CbtDaoException("Error while deleting device, result:" + result);
 		}
@@ -70,7 +70,7 @@ public class DeviceDao {
 	 */
 	public Device getDevice(Long deviceId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.DEVICE_ID.eq(deviceId))
+		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.ID.eq(deviceId))
 				.fetchOne();
 		return Device.fromJooqRecord(record);
 	}
@@ -110,7 +110,7 @@ public class DeviceDao {
 	 * Get devices by user id
 	 * 
 	 * @param userId
-	 * @return
+	 * @return Devices owned by user and devices shared with user
 	 */
 	public List<Device> getDevicesByUser(Long userId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
@@ -121,13 +121,28 @@ public class DeviceDao {
 						return Device.fromJooqRecord((DeviceRecord) record);
 					}
 				});
+		List<Device> sharedDevices = sqexec.select(DEVICE.fields()).from(DEVICE).join(DEVICE_SHARING)
+				.on(DEVICE_SHARING.DEVICE_ID.eq(DEVICE.ID)).where(DEVICE_SHARING.USER_ID.eq(userId)).fetch()
+				.map(new RecordMapper<Record, Device>() {
+					@Override
+					public Device map(Record record) {
+						return record.into(Device.class);
+					}
+				});
+		devices.addAll(sharedDevices);
 		return devices;
 	}
-
+	
+	/**
+	 * Get users which have access to device with specified id
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
 	public List<Map<String, Object>> getSharedWith(Long deviceId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record2<Long, String>> result = sqexec.select(USER.USER_ID, USER.NAME).from(USER).join(DEVICE_SHARING)
-				.on(DEVICE_SHARING.USER_ID.eq(USER.USER_ID)).where(DEVICE_SHARING.DEVICE_ID.eq(deviceId)).fetch();
+		Result<Record2<Long, String>> result = sqexec.select(USER.ID, USER.NAME).from(USER).join(DEVICE_SHARING)
+				.on(DEVICE_SHARING.USER_ID.eq(USER.ID)).where(DEVICE_SHARING.DEVICE_ID.eq(deviceId)).fetch();
 		return result.intoMaps();
 	}
 
@@ -142,7 +157,7 @@ public class DeviceDao {
 		int count = sqexec.update(DEVICE).set(DEVICE.DEVICETYPE_ID, device.getDeviceTypeId())
 				.set(DEVICE.DEVICEOS_ID, device.getDeviceOsId()).set(DEVICE.STATE, device.getState())
 				.set(DEVICE.UPDATED, new Timestamp(Calendar.getInstance().getTimeInMillis()))
-				.where(DEVICE.DEVICE_ID.eq(device.getId())).execute();
+				.where(DEVICE.ID.eq(device.getId())).execute();
 		if (count != 1) {
 			throw new CbtDaoException("Could not update device");
 		}

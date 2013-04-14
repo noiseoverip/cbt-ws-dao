@@ -13,6 +13,11 @@ import com.cbt.ws.utils.Utils;
  * 
  */
 public class Device extends CbtEntity {
+	
+	public Device() {
+		
+	}
+	
 	/**
 	 * Constructor to create device object from Jooq record
 	 * 
@@ -24,11 +29,11 @@ public class Device extends CbtEntity {
 			return null;
 		}
 		Device device = new Device();
-		device.setId(record.getDeviceId());
-		device.setDeviceOsId(record.getDeviceosId());
-		device.setDeviceTypeId(record.getDevicetypeId());
-		device.setDeviceUniqueId(record.getDeviceuniqueId());
-		device.setSerialNumber(record.getSerialnumber());
+		device.setId(record.getId());
+		device.setDeviceosId(record.getDeviceosId());
+		device.setDevicetypeId(record.getDevicetypeId());
+		device.setDeviceuniqueId(record.getDeviceuniqueId());
+		device.setSerialnumber(record.getSerialnumber());
 		device.setState(record.getState());
 		device.setUpdated(record.getUpdated());
 		device.setUserId(record.getUserId());
@@ -79,19 +84,19 @@ public class Device extends CbtEntity {
 		return updated;
 	}
 
-	public void setDeviceOsId(Long deviceOsId) {
+	public void setDeviceosId(Long deviceOsId) {
 		this.deviceOsId = deviceOsId;
 	}
 
-	public void setDeviceTypeId(Long deviceTypeId) {
+	public void setDevicetypeId(Long deviceTypeId) {
 		this.deviceTypeId = deviceTypeId;
 	}
 
-	public void setDeviceUniqueId(String deviceUniqueId) {
+	public void setDeviceuniqueId(String deviceUniqueId) {
 		this.deviceUniqueId = deviceUniqueId;
 	}
 
-	public void setSerialNumber(String serialNumber) {
+	public void setSerialnumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
 

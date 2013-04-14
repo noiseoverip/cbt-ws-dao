@@ -8,23 +8,22 @@ package com.cbt.ws.entity;
  */
 public class User {
 
-	private String mName;
-	private Integer mId;
+	private String name;
+	private Long id;
 
-	public Integer getId() {
-		return mId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setId(Integer id) {
-		this.mId = id;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
-		return mName;
+		return name;
 	}
 
 	public void setName(String name) {
-		mName = name;
+		this.name = name;
 	}
-
 }

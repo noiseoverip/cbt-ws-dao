@@ -2,8 +2,8 @@ package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.Device.DEVICE;
 import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
-import static com.cbt.ws.jooq.tables.User.USER;
 import static com.cbt.ws.jooq.tables.Testrun.TESTRUN;
+import static com.cbt.ws.jooq.tables.User.USER;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +15,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 import org.jooq.impl.Factory;
 
+import com.cbt.ws.entity.User;
 import com.cbt.ws.jooq.tables.records.UserRecord;
 import com.cbt.ws.mysql.Db;
 
@@ -33,14 +34,38 @@ public class UserDao {
 	 * @param password
 	 * @return
 	 */
-	public boolean authenticate(String username, String password) {
+	public User authenticate(String username, String password) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		UserRecord record = (UserRecord) sqexec.select().from(USER)
 				.where(USER.NAME.eq(username).and(USER.PASSWORD.eq(password))).fetchOne();
-		if (null != record) {
-			return true;
+		return record.into(User.class);
+	}
+	
+	/**
+	 * Get user by name
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public User getUserByName(String name) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		UserRecord record = (UserRecord) sqexec.select().from(USER)
+				.where(USER.NAME.eq(name)).fetchOne();
+		return record.into(User.class);
+	}
+	
+	/**
+	 * Create new user
+	 */
+	public User createNew(String username, String password ) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		UserRecord user = sqexec.newRecord(USER);
+		user.setName(username);
+		user.setPassword(password);
+		if (user.insert()== 1) {
+			return user.into(User.class);
 		} else {
-			return false;
+			return null;
 		}
 	}
 
@@ -52,7 +77,7 @@ public class UserDao {
 	 */
 	public Map<String, Object> getUserById(Long userId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		UserRecord record = (UserRecord) sqexec.select().from(USER).where(USER.USER_ID.eq(userId)).fetchOne();
+		UserRecord record = (UserRecord) sqexec.select().from(USER).where(USER.ID.eq(userId)).fetchOne();
 		return record.intoMap();
 	}
 
@@ -65,7 +90,7 @@ public class UserDao {
 	public List<Map<String, Object>> getUserHostedTestStats(Long userId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record2<Long, Integer>> result = sqexec.select(DEVICE_JOB.DEVICE_ID, Factory.count().as("runs"))
-				.from(DEVICE_JOB).join(DEVICE).on(DEVICE_JOB.DEVICE_ID.eq(DEVICE.DEVICE_ID))
+				.from(DEVICE_JOB).join(DEVICE).on(DEVICE_JOB.DEVICE_ID.eq(DEVICE.ID))
 				.where(DEVICE.USER_ID.eq(userId)).groupBy(DEVICE_JOB.DEVICE_ID).fetch();
 		return result.intoMaps();
 	}
@@ -90,7 +115,7 @@ public class UserDao {
 	 */
 	public List<Map<String, Object>> getAllUsers() {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record2<Long, String>> result = sqexec.select(USER.USER_ID, USER.NAME).from(USER).fetch();
+		Result<Record2<Long, String>> result = sqexec.select(USER.ID, USER.NAME).from(USER).fetch();
 		return result.intoMaps();
 	}	
 }
