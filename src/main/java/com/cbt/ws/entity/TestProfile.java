@@ -12,10 +12,16 @@ import com.cbt.ws.jooq.enums.TestprofileMode;
  */
 public class TestProfile extends CbtEntity {
 	private List<Long> deviceTypes;
+	private List<DeviceType> deviceTypesList; // TODO: fix this, shoud only be one list
+
 	private TestprofileMode mode;
 
 	public List<Long> getDeviceTypes() {
 		return deviceTypes;
+	}
+
+	public List<DeviceType> getDeviceTypesList() {
+		return deviceTypesList;
 	}
 
 	public TestprofileMode getMode() {
@@ -24,6 +30,10 @@ public class TestProfile extends CbtEntity {
 
 	public void setDeviceTypes(List<Long> deviceTypes) {
 		this.deviceTypes = deviceTypes;
+	}
+
+	public void setDeviceTypesList(List<DeviceType> deviceTypesList) {
+		this.deviceTypesList = deviceTypesList;
 	}
 
 	public void setMode(TestprofileMode mode) {

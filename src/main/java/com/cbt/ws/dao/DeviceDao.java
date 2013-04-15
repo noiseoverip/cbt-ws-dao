@@ -2,6 +2,7 @@ package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.Device.DEVICE;
 import static com.cbt.ws.jooq.tables.DeviceSharing.DEVICE_SHARING;
+import static com.cbt.ws.jooq.tables.DeviceType.DEVICE_TYPE;
 import static com.cbt.ws.jooq.tables.User.USER;
 
 import java.sql.Timestamp;
@@ -43,8 +44,7 @@ public class DeviceDao {
 				.insertInto(DEVICE, DEVICE.USER_ID, DEVICE.SERIALNUMBER, DEVICE.DEVICEUNIQUE_ID, DEVICE.DEVICETYPE_ID,
 						DEVICE.DEVICEOS_ID)
 				.values(device.getUserId(), device.getSerialNumber(), device.getDeviceUniqueId(),
-						device.getDeviceTypeId(), device.getDeviceOsId()).returning(DEVICE.ID).fetchOne()
-				.getId();
+						device.getDeviceTypeId(), device.getDeviceOsId()).returning(DEVICE.ID).fetchOne().getId();
 		return newDeviceId;
 	}
 
@@ -70,8 +70,7 @@ public class DeviceDao {
 	 */
 	public Device getDevice(Long deviceId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.ID.eq(deviceId))
-				.fetchOne();
+		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.ID.eq(deviceId)).fetchOne();
 		return Device.fromJooqRecord(record);
 	}
 
@@ -132,7 +131,7 @@ public class DeviceDao {
 		devices.addAll(sharedDevices);
 		return devices;
 	}
-	
+
 	/**
 	 * Get users which have access to device with specified id
 	 * 
@@ -143,6 +142,17 @@ public class DeviceDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record2<Long, String>> result = sqexec.select(USER.ID, USER.NAME).from(USER).join(DEVICE_SHARING)
 				.on(DEVICE_SHARING.USER_ID.eq(USER.ID)).where(DEVICE_SHARING.DEVICE_ID.eq(deviceId)).fetch();
+		return result.intoMaps();
+	}
+
+	/**
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	public List<Map<String, Object>> getDeviceTypes() {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Result<Record> result = sqexec.select().from(DEVICE_TYPE).fetch();
 		return result.intoMaps();
 	}
 
@@ -171,7 +181,7 @@ public class DeviceDao {
 	 */
 	public void addSharing(Long deviceId, Long userId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		sqexec.insertInto(DEVICE_SHARING, DEVICE_SHARING.DEVICE_ID, DEVICE_SHARING.USER_ID)
-				.values(deviceId, userId).execute();
+		sqexec.insertInto(DEVICE_SHARING, DEVICE_SHARING.DEVICE_ID, DEVICE_SHARING.USER_ID).values(deviceId, userId)
+				.execute();
 	}
 }

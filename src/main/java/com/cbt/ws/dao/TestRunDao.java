@@ -110,13 +110,13 @@ public class TestRunDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Record result = sqexec.select().from(TESTRUN)				
 				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
-				.join(TESTPROFILE).on(TESTPROFILE.TESTPROFILE_ID.eq(TESTCONFIG.TESTPROFILE_ID))
+				.join(TESTPROFILE).on(TESTPROFILE.ID.eq(TESTCONFIG.TESTPROFILE_ID))
 				.where(TESTRUN.TESTRUN_ID.eq(testRunId))
 				.fetchOne();
 		
 		TestRunComplex testRun = new TestRunComplex();
 		testRun.setTestConfigId(result.getValue(TESTCONFIG.TESTCONFIG_ID));
-		testRun.setTestProfileId(result.getValue(TESTPROFILE.TESTPROFILE_ID));
+		testRun.setTestProfileId(result.getValue(TESTPROFILE.ID));
 		
 		// Construct device type list
 		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)				
