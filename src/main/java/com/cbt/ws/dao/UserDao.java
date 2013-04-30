@@ -104,7 +104,7 @@ public class UserDao {
 	public List<Map<String, Object>> getUserRunTestStats(Long userId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record1<Integer>> result = sqexec.select(Factory.count().as("runs")).from(DEVICE_JOB).join(TESTRUN)
-				.on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.TESTRUN_ID)).where(TESTRUN.USER_ID.eq(userId)).fetch();
+				.on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.ID)).where(TESTRUN.USER_ID.eq(userId)).fetch();
 		return result.intoMaps();
 	}
 	

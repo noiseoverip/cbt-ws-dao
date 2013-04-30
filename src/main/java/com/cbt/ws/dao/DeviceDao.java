@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.RecordMapper;
@@ -18,8 +19,10 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.Device;
+import com.cbt.ws.entity.DeviceType;
 import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.tables.records.DeviceRecord;
+import com.cbt.ws.jooq.tables.records.DeviceTypeRecord;
 import com.cbt.ws.mysql.Db;
 
 /**
@@ -30,7 +33,7 @@ import com.cbt.ws.mysql.Db;
  */
 public class DeviceDao {
 
-	// private final Logger mLogger = Logger.getLogger(DeviceDao.class);
+	private final Logger mLogger = Logger.getLogger(DeviceDao.class);
 
 	/**
 	 * Add new device
@@ -154,6 +157,28 @@ public class DeviceDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(DEVICE_TYPE).fetch();
 		return result.intoMaps();
+	}
+	
+	/**
+	 * Return existing device type based on provided properties, create if doesn't exist
+	 * 
+	 * @param manufacture
+	 * @param model
+	 * @return
+	 */
+	public DeviceType getOrCreateDeviceType(String manufacture, String model) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Record result = sqexec.select().from(DEVICE_TYPE).where(DEVICE_TYPE.MANUFACTURE.eq(manufacture))
+				.and(DEVICE_TYPE.MODEL.eq(model)).fetchOne();
+		if (null == result) {
+			DeviceTypeRecord record = sqexec.insertInto(DEVICE_TYPE, DEVICE_TYPE.MANUFACTURE, DEVICE_TYPE.MODEL)
+					.values(manufacture, model).returning(DEVICE_TYPE.fields()).fetchOne();
+			if (null == record) {
+				mLogger.error("Could not create new device type");
+			}
+			return record.into(DeviceType.class);
+		}
+		return result.into(DeviceType.class);
 	}
 
 	/**

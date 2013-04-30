@@ -1,10 +1,5 @@
 package com.cbt.ws.entity;
 
-import static com.cbt.ws.jooq.tables.Testscript.TESTSCRIPT;
-import static com.cbt.ws.jooq.tables.Testtarget.TESTTARGET;
-
-import org.jooq.Record;
-
 import com.cbt.ws.utils.Utils;
 
 /**
@@ -16,16 +11,6 @@ import com.cbt.ws.utils.Utils;
 public class TestTarget extends CbtEntity {
 	private String fileName;
 	private String filePath;
-	
-	public static TestTarget fromJooq(Record r) {
-		TestTarget tp = new TestTarget();
-		tp.setId(r.getValue(TESTTARGET.TESTTARGET_ID));
-		tp.setFilePath(r.getValue(TESTTARGET.PATH));
-		tp.setName(r.getValue(TESTSCRIPT.NAME));
-		tp.setFileName(r.getValue(TESTSCRIPT.FILENAME));
-		tp.setMetadata(r.getValue(TESTTARGET.METADATA));
-		return tp;
-	}
 	
 	public String getFileName() {
 		return fileName;

@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jooq.Record;
+import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
@@ -42,10 +43,10 @@ public class TestRunDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Starting new test run");
 		Long testRunId = sqexec
-				.insertInto(TESTRUN, TESTRUN.USER_ID, TESTRUN.TESTCONFIG_ID, TESTRUN.CREATED)
+				.insertInto(TESTRUN, TESTRUN.USER_ID, TESTRUN.TEST_CONFIG_ID, TESTRUN.CREATED)
 				.values(testRun.getUserId(), testRun.getTestConfigId(),
-						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(TESTRUN.TESTRUN_ID)
-				.fetchOne().getTestrunId();
+						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(TESTRUN.ID)
+				.fetchOne().getId();
 		mLogger.trace("Added test run, new id:" + testRunId);
 		return testRunId;
 	}
@@ -58,7 +59,7 @@ public class TestRunDao {
 	 */
 	public void delete(TestRun testRun) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int result = sqexec.delete(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRun.getId())).execute();
+		int result = sqexec.delete(TESTRUN).where(TESTRUN.ID.eq(testRun.getId())).execute();
 		if (result != 1) {
 			throw new CbtDaoException("Error while deleting device, result:" + result);
 		}
@@ -75,8 +76,8 @@ public class TestRunDao {
 		Result<Record> result = sqexec.select().from(TESTRUN).orderBy(TESTRUN.CREATED.desc()).fetch();
 		for (Record r : result) {
 			TestRun tr = new TestRun();
-			tr.setId(r.getValue(TESTRUN.TESTRUN_ID));
-			tr.setTestConfigId(r.getValue(TESTRUN.TESTCONFIG_ID));
+			tr.setId(r.getValue(TESTRUN.ID));
+			tr.setTestConfigId(r.getValue(TESTRUN.TEST_CONFIG_ID));
 			tr.setCreated(r.getValue(TESTRUN.CREATED));
 			tr.setUpdated(r.getValue(TESTRUN.UPDATED));
 			tr.setStatus(r.getValue(TESTRUN.STATUS));
@@ -88,6 +89,25 @@ public class TestRunDao {
 	}
 
 	/**
+	 * Get test runs of specific user
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	public List<TestRun> getByUserId(Long userId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		List<TestRun> result = sqexec.select().from(TESTRUN).where(TESTRUN.USER_ID.eq(userId))
+				.orderBy(TESTRUN.UPDATED.desc()).fetch(new RecordMapper<Record, TestRun>() {
+					@Override
+					public TestRun map(Record record) {
+						TestRun tp = record.into(TestRun.class);
+						return tp;
+					}
+				});
+		return result;
+	}
+
+	/**
 	 * Get TestRun
 	 * 
 	 * @param testRunId
@@ -95,11 +115,11 @@ public class TestRunDao {
 	 */
 	public TestRun getTestRun(Long testRunId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		TestrunRecord record = (TestrunRecord) sqexec.select().from(TESTRUN).where(TESTRUN.TESTRUN_ID.eq(testRunId))
+		TestrunRecord record = (TestrunRecord) sqexec.select().from(TESTRUN).where(TESTRUN.ID.eq(testRunId))
 				.fetchOne();
-		return TestRun.fromJooqRecord(record);
+		return record.into(TestRun.class);
 	}
-	
+
 	/**
 	 * Get Test more complex test run information
 	 * 
@@ -108,22 +128,19 @@ public class TestRunDao {
 	 */
 	public TestRunComplex getTestRunComplex(Long testRunId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Record result = sqexec.select().from(TESTRUN)				
-				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
-				.join(TESTPROFILE).on(TESTPROFILE.ID.eq(TESTCONFIG.TESTPROFILE_ID))
-				.where(TESTRUN.TESTRUN_ID.eq(testRunId))
-				.fetchOne();
-		
+		Record result = sqexec.select().from(TESTRUN).join(TESTCONFIG)
+				.on(TESTCONFIG.ID.eq(TESTRUN.TEST_CONFIG_ID)).join(TESTPROFILE)
+				.on(TESTPROFILE.ID.eq(TESTCONFIG.TEST_PROFILE_ID)).where(TESTRUN.ID.eq(testRunId)).fetchOne();
+
 		TestRunComplex testRun = new TestRunComplex();
-		testRun.setTestConfigId(result.getValue(TESTCONFIG.TESTCONFIG_ID));
+		testRun.setTestConfigId(result.getValue(TESTCONFIG.ID));
 		testRun.setTestProfileId(result.getValue(TESTPROFILE.ID));
-		
+
 		// Construct device type list
-		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)				
-				.where(TESTPROFILE_DEVICES.TESTPROFILE_ID.eq(testRun.getTestProfileId()))
-				.fetch();
+		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)
+				.where(TESTPROFILE_DEVICES.TESTPROFILE_ID.eq(testRun.getTestProfileId())).fetch();
 		List<Long> deviceTypes = new ArrayList<Long>(resultDeviceTypes.size());
-		for (Record r : resultDeviceTypes) {			
+		for (Record r : resultDeviceTypes) {
 			deviceTypes.add(r.getValue(TESTPROFILE_DEVICES.DEVICETYPE_ID));
 		}
 		testRun.setDeviceTypes(deviceTypes);
@@ -139,7 +156,7 @@ public class TestRunDao {
 	public void update(TestRun testRun) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		int count = sqexec.update(TESTRUN).set(TESTRUN.STATUS, testRun.getStatus())
-				.where(TESTRUN.TESTRUN_ID.eq(testRun.getId())).execute();
+				.where(TESTRUN.ID.eq(testRun.getId())).execute();
 
 		if (count != 1) {
 			throw new CbtDaoException("Could not update device");

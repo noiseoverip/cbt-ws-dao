@@ -79,7 +79,7 @@ public class TestScriptDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTSCRIPT).fetch();
 		for (Record r : result) {
-			TestScript ts = TestScript.fromJooq(r);
+			TestScript ts = r.into(TestScript.class);
 			packages.add(ts);
 			mLogger.debug("ID: " + ts.getId() + " path: " + ts.getFilePath() + " metadata: " + ts.getMetadata());
 		}

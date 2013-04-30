@@ -52,10 +52,10 @@ public class CheckoutDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		// TODO: improve size of returned data, we only need a couple of fields
 		Record result = sqexec.select().from(DEVICE_JOB)
-				.join(TESTRUN).on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.TESTRUN_ID))
-				.join(TESTCONFIG).on(TESTCONFIG.TESTCONFIG_ID.eq(TESTRUN.TESTCONFIG_ID))
-				.join(TESTSCRIPT).on(TESTSCRIPT.TESTSCRIPT_ID.eq(TESTCONFIG.TESTSCRIPT_ID))
-				.join(TESTTARGET).on(TESTTARGET.TESTTARGET_ID.eq(TESTCONFIG.TESTTARGET_ID))
+				.join(TESTRUN).on(DEVICE_JOB.TESTRUN_ID.eq(TESTRUN.ID))
+				.join(TESTCONFIG).on(TESTCONFIG.ID.eq(TESTRUN.TEST_CONFIG_ID))
+				.join(TESTSCRIPT).on(TESTSCRIPT.TESTSCRIPT_ID.eq(TESTCONFIG.TEST_SCRIPT_ID))
+				.join(TESTTARGET).on(TESTTARGET.TESTTARGET_ID.eq(TESTCONFIG.TEST_TARGET_ID))
 				.where(DEVICE_JOB.DEVICEJOB_ID.eq(devicejobId))
 				.fetchOne();
 		

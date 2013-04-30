@@ -79,7 +79,7 @@ public class TestTargetDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTTARGET).fetch();
 		for (Record r : result) {
-			TestTarget tp = TestTarget.fromJooq(r);
+			TestTarget tp = r.into(TestTarget.class);
 			applications.add(tp);
 			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
 		}
