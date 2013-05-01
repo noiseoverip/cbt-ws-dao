@@ -15,11 +15,15 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
+import org.jooq.tools.json.JSONArray;
+import org.jooq.tools.json.JSONObject;
 
 import com.cbt.ws.annotations.TestFileStorePath;
 import com.cbt.ws.entity.TestScript;
 import com.cbt.ws.jooq.tables.records.TestscriptRecord;
 import com.cbt.ws.mysql.Db;
+import com.cbt.ws.utils.JarScanner;
+import com.cbt.ws.utils.JarScannerException;
 import com.cbt.ws.utils.Utils;
 
 /**
@@ -108,6 +112,13 @@ public class TestScriptDao {
 		String filePath = testPackagePath + "//" + fileName;
 		Utils.writeToFile(uploadedInputStream, filePath);
 
+		// Parse test class names
+		try {
+			testScript.setTestClasses(new JarScanner(filePath).getTestClasseNames());
+		} catch (JarScannerException e) {
+			mLogger.error("Could not parse test class names from " + testScript.getFilePath());
+		}
+
 		// Update test package path and other info
 		testScript.setFilePath(filePath);
 		testScript.setFileName(fileName);
@@ -123,6 +134,7 @@ public class TestScriptDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getFilePath())
 				.set(TESTSCRIPT.FILENAME, testScript.getFileName()).set(TESTSCRIPT.NAME, testScript.getName())
+				.set(TESTSCRIPT.CLASSES, JSONArray.toJSONString(testScript.getTestClasses()))
 				.where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScript.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testScript);
 		} else {
