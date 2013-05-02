@@ -65,7 +65,7 @@ public class TestRunDaoTest {
 		if (null == testRun) {
 			testRun = new TestRun();
 			testRun.setUserId(1L);
-			testRun.setTestConfigId(1L);			
+			testRun.setTestConfigId(32L);			
 		}		
 		Long testRunId = dao.add(testRun);
 		assertTrue("Failed to add new device:" + testRun, testRunId > 0);

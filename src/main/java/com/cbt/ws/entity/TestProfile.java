@@ -3,6 +3,7 @@ package com.cbt.ws.entity;
 import java.util.List;
 
 import com.cbt.ws.jooq.enums.TestprofileMode;
+import com.cbt.ws.utils.Utils;
 
 /**
  * Entity representing test profile data (mode, device types...)
@@ -38,5 +39,10 @@ public class TestProfile extends CbtEntity {
 
 	public void setMode(TestprofileMode mode) {
 		this.mode = mode;
+	}
+	
+	@Override
+	public String toString() {
+		return Utils.toString("TestProfile", "Mode", mode, "DeviceTypes", deviceTypes);
 	}
 }

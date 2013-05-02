@@ -70,7 +70,7 @@ public class DeviceJob extends CbtEntity {
 
 	@Override
 	public String toString() {
-		return Utils.toString("Device", "id", getId(), "deviceId", deviceId, "testRun", testRunId, "status", status);
+		return Utils.toString("Device", "id", getId(), "deviceId", deviceId, "testRun", testRunId, "status", status, "meta", getMetadata());
 	}
 
 }

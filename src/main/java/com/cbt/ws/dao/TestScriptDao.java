@@ -16,7 +16,6 @@ import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 import org.jooq.tools.json.JSONArray;
-import org.jooq.tools.json.JSONObject;
 
 import com.cbt.ws.annotations.TestFileStorePath;
 import com.cbt.ws.entity.TestScript;
@@ -88,6 +87,16 @@ public class TestScriptDao {
 			mLogger.debug("ID: " + ts.getId() + " path: " + ts.getFilePath() + " metadata: " + ts.getMetadata());
 		}
 		return packages.toArray(new TestScript[packages.size()]);
+	}
+	
+	/**
+	 * Get by id
+	 */
+	public TestScript getById(Long testScriptId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Record result = sqexec.select().from(TESTSCRIPT).where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScriptId))
+				.fetchOne();		
+		return result.into(TestScript.class);
 	}
 
 	/**

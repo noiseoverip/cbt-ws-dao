@@ -17,6 +17,8 @@ import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
+import com.cbt.ws.entity.TestConfig;
+import com.cbt.ws.entity.TestProfile;
 import com.cbt.ws.entity.TestRun;
 import com.cbt.ws.entity.complex.TestRunComplex;
 import com.cbt.ws.exceptions.CbtDaoException;
@@ -133,8 +135,11 @@ public class TestRunDao {
 				.on(TESTPROFILE.ID.eq(TESTCONFIG.TEST_PROFILE_ID)).where(TESTRUN.ID.eq(testRunId)).fetchOne();
 
 		TestRunComplex testRun = new TestRunComplex();
+		testRun.setId(testRunId);
 		testRun.setTestConfigId(result.getValue(TESTCONFIG.ID));
 		testRun.setTestProfileId(result.getValue(TESTPROFILE.ID));
+		testRun.setTestProfile(result.into(TestProfile.class));
+		testRun.setTestConfig(result.into(TestConfig.class));
 
 		// Construct device type list
 		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)
