@@ -5,6 +5,7 @@ import java.util.Date;
 import com.cbt.ws.jooq.enums.DeviceState;
 import com.cbt.ws.jooq.tables.records.DeviceRecord;
 import com.cbt.ws.utils.Utils;
+import com.google.common.base.Objects;
 
 /**
  * Device object entity
@@ -110,6 +111,13 @@ public class Device extends CbtEntity {
 
 	@Override
 	public String toString() {
-		return Utils.toString("Device", "id", getId(), "serial", serialNumber, "state", state);
+		return Objects.toStringHelper(this.getClass())
+		.add("id", getId())
+        .add("serial", serialNumber)
+        .add( "state", state)
+        .add("deviceTypeId", deviceTypeId)
+        .add("user_id", getUserId())
+        .add("lastUpdated", updated)
+        .toString();
 	}
 }

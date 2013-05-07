@@ -91,7 +91,6 @@ public class TestProfileDao {
 			tp.setName(r.getValue(TESTPROFILE.NAME));
 			tp.setUserId(r.getValue(TESTPROFILE.USER_ID));
 			tp.setMode(r.getValue(TESTPROFILE.MODE));
-			tp.setMetadata(r.getValue(TESTPROFILE.METADATA));
 			// Get devices of this test profile
 			List<DeviceType> devices = getDeviceTypesByTestProfile(tp.getId());
 			if (null != devices) {

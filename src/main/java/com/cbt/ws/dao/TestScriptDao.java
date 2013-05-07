@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -24,6 +25,9 @@ import com.cbt.ws.mysql.Db;
 import com.cbt.ws.utils.JarScanner;
 import com.cbt.ws.utils.JarScannerException;
 import com.cbt.ws.utils.Utils;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Test package DAO
@@ -36,6 +40,7 @@ public class TestScriptDao {
 	private final Logger mLogger = Logger.getLogger(TestScriptDao.class);
 
 	private String mTestScriptStorePath;
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Inject
 	public TestScriptDao(@TestFileStorePath String testPackageStorePath) {
@@ -51,8 +56,8 @@ public class TestScriptDao {
 	private Long createNewTestScriptRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		TestscriptRecord result = sqexec.insertInto(TESTSCRIPT, TESTSCRIPT.USER_ID).values(userid)
-				.returning(TESTSCRIPT.TESTSCRIPT_ID).fetchOne();
-		return result.getTestscriptId();
+				.returning(TESTSCRIPT.ID).fetchOne();
+		return result.getId();
 	}
 
 	/**
@@ -84,19 +89,35 @@ public class TestScriptDao {
 		for (Record r : result) {
 			TestScript ts = r.into(TestScript.class);
 			packages.add(ts);
-			mLogger.debug("ID: " + ts.getId() + " path: " + ts.getFilePath() + " metadata: " + ts.getMetadata());
 		}
 		return packages.toArray(new TestScript[packages.size()]);
 	}
-	
+
 	/**
 	 * Get by id
 	 */
 	public TestScript getById(Long testScriptId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Record result = sqexec.select().from(TESTSCRIPT).where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScriptId))
-				.fetchOne();		
-		return result.into(TestScript.class);
+		Record result = sqexec.select().from(TESTSCRIPT).where(TESTSCRIPT.ID.eq(testScriptId)).fetchOne();
+		TestScript testScript = result.into(TestScript.class);
+		// Need to parse test clases separately since those are in JSON format
+		
+		String classesJson = result.getValue(TESTSCRIPT.CLASSES);
+		if (null != classesJson) {
+			try {
+				testScript.setTestClasses(objectMapper.readValue(classesJson, String[].class));
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return testScript;
 	}
 
 	/**
@@ -125,11 +146,11 @@ public class TestScriptDao {
 		try {
 			testScript.setTestClasses(new JarScanner(filePath).getTestClasseNames());
 		} catch (JarScannerException e) {
-			mLogger.error("Could not parse test class names from " + testScript.getFilePath());
+			mLogger.error("Could not parse test class names from " + testScript.getPath());
 		}
 
 		// Update test package path and other info
-		testScript.setFilePath(filePath);
+		testScript.setPath(filePath);
 		testScript.setFileName(fileName);
 		updateTestScript(testScript);
 	}
@@ -141,10 +162,10 @@ public class TestScriptDao {
 	 */
 	private void updateTestScript(TestScript testScript) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getFilePath())
-				.set(TESTSCRIPT.FILENAME, testScript.getFileName()).set(TESTSCRIPT.NAME, testScript.getName())
-				.set(TESTSCRIPT.CLASSES, JSONArray.toJSONString(testScript.getTestClasses()))
-				.where(TESTSCRIPT.TESTSCRIPT_ID.eq(testScript.getId())).execute() != 1) {
+		if (sqexec.update(TESTSCRIPT).set(TESTSCRIPT.PATH, testScript.getPath())
+				.set(TESTSCRIPT.FILE_NAME, testScript.getFileName()).set(TESTSCRIPT.NAME, testScript.getName())
+				.set(TESTSCRIPT.CLASSES, JSONArray.toJSONString(Arrays.asList(testScript.getTestClasses())))
+				.where(TESTSCRIPT.ID.eq(testScript.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testScript);
 		} else {
 			mLogger.debug("Test package updated:" + testScript);

@@ -48,8 +48,8 @@ public class TestTargetDao {
 	private Long createNewTestPackageRecord(Long userid) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		TesttargetRecord result = sqexec.insertInto(TESTTARGET, TESTTARGET.USER_ID).values(userid)
-				.returning(TESTTARGET.TESTTARGET_ID).fetchOne();
-		return result.getTesttargetId();
+				.returning(TESTTARGET.ID).fetchOne();
+		return result.getId();
 	}
 
 	/**
@@ -81,7 +81,6 @@ public class TestTargetDao {
 		for (Record r : result) {
 			TestTarget tp = r.into(TestTarget.class);
 			applications.add(tp);
-			mLogger.debug("ID: " + tp.getId() + " path: " + tp.getFilePath() + " metadata: " + tp.getMetadata());
 		}
 		return applications.toArray(new TestTarget[applications.size()]);
 	}
@@ -109,7 +108,7 @@ public class TestTargetDao {
 		Utils.writeToFile(uploadedInputStream, filePath);
 
 		// Update path and other info
-		testTarget.setFilePath(filePath);
+		testTarget.setPath(filePath);
 		testTarget.setFileName(fileName);
 		updateTestTarget(testTarget);
 	}
@@ -122,9 +121,9 @@ public class TestTargetDao {
 	private void updateTestTarget(TestTarget testTarget) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 
-		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getFilePath())
-				.set(TESTTARGET.FILENAME, testTarget.getFileName()).set(TESTTARGET.NAME, testTarget.getName())
-				.where(TESTTARGET.TESTTARGET_ID.eq(testTarget.getId())).execute() != 1) {
+		if (sqexec.update(TESTTARGET).set(TESTTARGET.PATH, testTarget.getPath())
+				.set(TESTTARGET.FILE_NAME, testTarget.getFileName()).set(TESTTARGET.NAME, testTarget.getName())
+				.where(TESTTARGET.ID.eq(testTarget.getId())).execute() != 1) {
 			mLogger.error("Failed to update package:" + testTarget);
 		} else {
 			mLogger.debug("Test package updated:" + testTarget);

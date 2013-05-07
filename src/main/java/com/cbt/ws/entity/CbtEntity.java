@@ -27,8 +27,6 @@ public abstract class CbtEntity {
 		this.created = created;
 	}
 
-	private String metadata;
-
 	public Long getUserId() {
 		return userId;
 	}
@@ -68,13 +66,4 @@ public abstract class CbtEntity {
 	public void setUpdated(Date updated) {
 		this.updated = updated;
 	}
-
-	public String getMetadata() {
-		return metadata;
-	}
-
-	public void setMetadata(String metadata) {
-		this.metadata = metadata;
-	}
-
 }

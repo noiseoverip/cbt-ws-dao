@@ -1,6 +1,6 @@
 package com.cbt.ws.entity;
 
-import java.util.List;
+import java.util.Arrays;
 
 import com.cbt.ws.utils.Utils;
 
@@ -11,36 +11,36 @@ import com.cbt.ws.utils.Utils;
  *
  */
 public class TestScript extends CbtEntity {
-	private String filePath;
 	private String fileName;
-	private List<String> testClasses;
-	
+	private String path;
+	private String[] testClasses;
+
 	public String getFileName() {
 		return fileName;
 	}
 
-	public String getFilePath() {
-		return filePath;
+	public String getPath() {
+		return path;
 	}
-
-	public List<String> getTestClasses() {
+	
+	public String[] getTestClasses() {
 		return testClasses;
 	}
-
+	
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
-	}
+	public void setPath(String path) {
+		this.path = path;
+	}	
 
-	public void setTestClasses(List<String> testClasses) {
+	public void setTestClasses(String[] testClasses) {
 		this.testClasses = testClasses;
 	}
 
 	@Override
 	public String toString() {
-		return Utils.toString("TestScript", "id", getId(),"fileName", fileName, "filePath", filePath);
+		return Utils.toString("TestScript", "id", getId(),"fileName", fileName, "path", path, "testClasses", Arrays.toString(testClasses));
 	}
 }

@@ -86,7 +86,7 @@ public class DeviceDaoTest {
 		Device deviceByUid = dao.getDeviceByUid(device1.getDeviceUniqueId());
 		Assert.assertEquals(device1, deviceByUid);
 		
-		List<Device> allOfThatType = dao.getDevicesOfType(device1.getDeviceTypeId());
+		List<Device> allOfThatType = dao.getDevicesOfType(device1.getDeviceTypeId(), null);
 		mLogger.info(allOfThatType);
 		
 		//Clean up		

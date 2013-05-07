@@ -6,6 +6,7 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +21,8 @@ import com.cbt.ws.jooq.enums.DeviceJobStatus;
  *
  */
 public class DevicejobDaoTest {
-	DevicejobDao mUnit;
+	private DevicejobDao mUnit;
+	private final Logger logger = Logger.getLogger(DevicejobDaoTest.class);
 	
 	/**
 	 * Create and store new job, verify creation
@@ -33,9 +35,10 @@ public class DevicejobDaoTest {
 		DeviceJob job = new DeviceJob();
 		job.setDeviceId(randomDeviceId);
 		job.setTestRunId(randomTestRunId);
+		job.getMetadata().setTestClasses(new String[]{"com.test.1", "com.test.2"});
 		Long newDeviceJobId = mUnit.add(job);
 		Assert.assertNotNull(newDeviceJobId);
-		job.setId(newDeviceJobId);
+		job.setId(newDeviceJobId);		
 		return job;
 	}
 	
@@ -59,11 +62,14 @@ public class DevicejobDaoTest {
 	
 	@Test
 	public void updateDeviceJob() {
+		logger.info("Starting updateDeviceJobTest");
 		// Add job
 		DeviceJob job = createAndAddJob();
+		logger.info("Created job:" + job);
 		
 		// Get waiting
 		DeviceJob waitingJob = mUnit.getOldestWaiting(job.getDeviceId());
+		logger.info("Received oldest waiting job:" + waitingJob);
 		Assert.assertNotNull(waitingJob);
 		Assert.assertEquals(job.getDeviceId(), waitingJob.getDeviceId());
 		Assert.assertEquals(job.getTestRunId(), waitingJob.getTestRunId());
@@ -78,7 +84,7 @@ public class DevicejobDaoTest {
 		
 		// Make sure we don't have any more waiting jobs for our device
 		DeviceJob waitingJob2 = mUnit.getOldestWaiting(job.getDeviceId());
-		Assert.assertTrue(waitingJob2 == null);
+		Assert.assertNull(waitingJob2);
 		
 		// Delete
 		deleteJob(job);

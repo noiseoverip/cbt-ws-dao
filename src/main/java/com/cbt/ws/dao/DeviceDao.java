@@ -16,11 +16,14 @@ import org.jooq.Record2;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectJoinStep;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.Device;
 import com.cbt.ws.entity.DeviceType;
 import com.cbt.ws.exceptions.CbtDaoException;
+import com.cbt.ws.jooq.enums.DeviceState;
 import com.cbt.ws.jooq.tables.records.DeviceRecord;
 import com.cbt.ws.jooq.tables.records.DeviceTypeRecord;
 import com.cbt.ws.mysql.Db;
@@ -96,9 +99,27 @@ public class DeviceDao {
 	 * @param deviceType
 	 * @return
 	 */
-	public List<Device> getDevicesOfType(Long deviceType) {
+	public List<Device> getDevicesOfType(Long deviceType, DeviceState state) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.DEVICETYPE_ID.eq(deviceType)).fetch()
+		SelectJoinStep<Record> select = sqexec.select().from(DEVICE);
+		SelectConditionStep<Record> condition = select.where(DEVICE.DEVICETYPE_ID.eq(deviceType));
+		if (null != state) {
+			condition = condition.and(DEVICE.STATE.eq(state));
+		}		
+		List<Device> devices = condition.fetch()
+				.map(new RecordMapper<Record, Device>() {
+					@Override
+					public Device map(Record record) {
+						return Device.fromJooqRecord((DeviceRecord) record);
+					}
+				});
+		
+		return devices;
+	}
+	
+	public List<Device> getAllActive() {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.STATE.eq(DeviceState.ONLINE)).fetch()
 				.map(new RecordMapper<Record, Device>() {
 					@Override
 					public Device map(Record record) {

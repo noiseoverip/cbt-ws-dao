@@ -1,5 +1,7 @@
 package com.cbt.ws.entity;
 
+import java.util.List;
+
 import com.cbt.ws.jooq.enums.TestrunStatus;
 import com.cbt.ws.utils.Utils;
 
@@ -10,29 +12,9 @@ import com.cbt.ws.utils.Utils;
  * 
  */
 public class TestRun extends CbtEntity {
-	private Long testConfigId;
+	private List<Device> devices;
 	private TestrunStatus status;
-
-	public Long getTestConfigId() {
-		return testConfigId;
-	}
-
-	public void setTestConfigId(Long testConfigId) {
-		this.testConfigId = testConfigId;
-	}
-
-	public TestrunStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(TestrunStatus status) {
-		this.status = status;
-	}
-
-	@Override
-	public String toString() {
-		return Utils.toString("TestRun", "id", getId(), "testConfigId", testConfigId, "status", status);
-	}
+	private Long testConfigId;
 
 	@Override
 	public boolean equals(Object object) {
@@ -44,5 +26,34 @@ public class TestRun extends CbtEntity {
 			}
 		}
 		return false;
+	}
+
+	public List<Device> getDevices() {
+		return devices;
+	}
+
+	public TestrunStatus getStatus() {
+		return status;
+	}
+
+	public Long getTestConfigId() {
+		return testConfigId;
+	}
+
+	public void setDevices(List<Device> devices) {
+		this.devices = devices;
+	}
+
+	public void setStatus(TestrunStatus status) {
+		this.status = status;
+	}
+
+	public void setTestConfigId(Long testConfigId) {
+		this.testConfigId = testConfigId;
+	}
+
+	@Override
+	public String toString() {
+		return Utils.toString("TestRun", "id", getId(), "testConfigId", testConfigId, "status", status);
 	}
 }

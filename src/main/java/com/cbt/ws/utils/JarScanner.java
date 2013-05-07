@@ -25,7 +25,7 @@ public class JarScanner {
 		this.filePath = filePath;
 	}
 
-	public List<String> getTestClasseNames() throws JarScannerException {
+	public String[] getTestClasseNames() throws JarScannerException {
 		List<String> classes = new ArrayList<String>();
 		DexFile dxFile;
 		try {
@@ -43,6 +43,6 @@ public class JarScanner {
 				classes.add(testClass);
 			}
 		}
-		return classes;
+		return classes.toArray(new String[classes.size()]);
 	}
 }

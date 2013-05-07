@@ -9,15 +9,19 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jooq.Record;
+import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Executor;
 
 import com.cbt.ws.entity.DeviceJob;
+import com.cbt.ws.entity.DeviceJobMetadata;
 import com.cbt.ws.exceptions.CbtDaoException;
 import com.cbt.ws.jooq.enums.DeviceJobStatus;
 import com.cbt.ws.jooq.tables.records.DeviceJobRecord;
 import com.cbt.ws.mysql.Db;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Device job DAO
@@ -28,6 +32,8 @@ import com.cbt.ws.mysql.Db;
 public class DevicejobDao {
 
 	private final Logger mLogger = Logger.getLogger(DevicejobDao.class);
+	// TODO: use one static instance for all project
+	private final ObjectMapper mMapper = new ObjectMapper();
 
 	/**
 	 * Add new test configuration
@@ -38,11 +44,18 @@ public class DevicejobDao {
 	public Long add(DeviceJob deviceJob) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new device job");
+		String metadata = null;
+		try {
+			metadata = mMapper.writeValueAsString(deviceJob.getMetadata());
+		} catch (JsonProcessingException e) {
+			mLogger.error("Could not convert to JSON:" + deviceJob.getMetadata());
+		}		
 		Long deviceJobId = sqexec
-				.insertInto(DEVICE_JOB, DEVICE_JOB.DEVICE_ID, DEVICE_JOB.TESTRUN_ID, DEVICE_JOB.CREATED)
+				.insertInto(DEVICE_JOB, DEVICE_JOB.DEVICE_ID, DEVICE_JOB.TEST_RUN_ID, DEVICE_JOB.CREATED,
+						DEVICE_JOB.META)
 				.values(deviceJob.getDeviceId(), deviceJob.getTestRunId(),
-						new Timestamp(Calendar.getInstance().getTimeInMillis())).returning(DEVICE_JOB.DEVICEJOB_ID)
-				.fetchOne().getDevicejobId();
+						new Timestamp(Calendar.getInstance().getTimeInMillis()), metadata)
+				.returning(DEVICE_JOB.ID).fetchOne().getId();
 		mLogger.trace("Added device job, new id:" + deviceJobId);
 		return deviceJobId;
 	}
@@ -56,7 +69,7 @@ public class DevicejobDao {
 	public void delete(DeviceJob deviceJob) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Updating deviceJob");
-		int count = sqexec.delete(DEVICE_JOB).where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+		int count = sqexec.delete(DEVICE_JOB).where(DEVICE_JOB.ID.eq(deviceJob.getId())).execute();
 
 		if (count != 1) {
 			mLogger.error("Could delete deviceJob:" + deviceJob);
@@ -91,7 +104,7 @@ public class DevicejobDao {
 	public DeviceJob[] getByTestRunId(Long testRunId) {
 		List<DeviceJob> testExecutions = new ArrayList<DeviceJob>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		Result<Record> result = sqexec.select().from(DEVICE_JOB).where(DEVICE_JOB.TESTRUN_ID.eq(testRunId)).fetch();
+		Result<Record> result = sqexec.select().from(DEVICE_JOB).where(DEVICE_JOB.TEST_RUN_ID.eq(testRunId)).fetch();
 		for (Record r : result) {
 			DeviceJob tc = DeviceJob.fromJooqRecord((DeviceJobRecord) r);
 			testExecutions.add(tc);
@@ -110,10 +123,26 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
 				.where(DEVICE_JOB.DEVICE_ID.eq(deviceId).and(DEVICE_JOB.STATUS.eq(DeviceJobStatus.WAITING)))
-				.orderBy(DEVICE_JOB.CREATED.asc()).limit(0, 1).fetchOne();
-		return DeviceJob.fromJooqRecord(record);
+				.orderBy(DEVICE_JOB.CREATED.asc()).limit(0, 1).fetchOne();		
+		return (null != record) ? record.map(deviceJobMapper) : null;
 	}
+	
+	private final RecordMapper<Record, DeviceJob> deviceJobMapper = new RecordMapper<Record, DeviceJob>() {
 
+		@Override
+		public DeviceJob map(Record record) {
+			DeviceJob deviceJob = record.into(DeviceJob.class);
+			DeviceJobMetadata medatada = null;
+			try {
+				medatada = mMapper.readValue(record.getValue(DEVICE_JOB.META), DeviceJobMetadata.class);
+			} catch (Exception e) {
+				mLogger.error("Could not mapp " + record.getValue(DEVICE_JOB.META) + " to " + DeviceJobMetadata.class.getSimpleName());
+			}
+			deviceJob.setMetadata(medatada);
+			return deviceJob;
+		}
+	};
+	
 	/**
 	 * Update deviceJob, we should only need to update: state
 	 * 
@@ -124,7 +153,7 @@ public class DevicejobDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Updating deviceJob");
 		int count = sqexec.update(DEVICE_JOB).set(DEVICE_JOB.STATUS, deviceJob.getStatus())
-				.where(DEVICE_JOB.DEVICEJOB_ID.eq(deviceJob.getId())).execute();
+				.where(DEVICE_JOB.ID.eq(deviceJob.getId())).execute();
 
 		if (count != 1) {
 			mLogger.error("Could not update deviceJob:" + deviceJob);
@@ -132,7 +161,7 @@ public class DevicejobDao {
 		}
 		mLogger.trace("Updated device job, result: " + count);
 	}
-	
+
 	/**
 	 * Get device job by id
 	 * 
@@ -142,7 +171,7 @@ public class DevicejobDao {
 	public DeviceJob getById(Long id) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
-				.where(DEVICE_JOB.DEVICEJOB_ID.eq(id)).fetchOne();
+				.where(DEVICE_JOB.ID.eq(id)).fetchOne();
 		return DeviceJob.fromJooqRecord(record);
 	}
 }

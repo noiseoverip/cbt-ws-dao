@@ -10,27 +10,27 @@ import com.cbt.ws.utils.Utils;
  */
 public class TestTarget extends CbtEntity {
 	private String fileName;
-	private String filePath;
-	
+	private String path;
+
 	public String getFileName() {
 		return fileName;
 	}
 
-	public String getFilePath() {
-		return filePath;
+	public String getPath() {
+		return path;
 	}
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
-	public void setFilePath(String filePath) {
-		this.filePath = filePath;
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	@Override
 	public String toString() {
-		return Utils.toString("TestTarget", "id", getId(), "fileName", fileName, "filePath", filePath);
+		return Utils.toString("TestTarget", "id", getId(), "fileName", fileName, "path", path);
 	}
 
 }

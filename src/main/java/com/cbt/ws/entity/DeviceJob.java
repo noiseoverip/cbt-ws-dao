@@ -8,7 +8,7 @@ import com.cbt.ws.utils.Utils;
  * Device job entity. Represents information describing a job(test) for specific device.
  * 
  * @author SauliusAlisauskas 2013-03-24 Initial version
- *
+ * 
  */
 public class DeviceJob extends CbtEntity {
 
@@ -23,9 +23,9 @@ public class DeviceJob extends CbtEntity {
 			return null;
 		}
 		DeviceJob job = new DeviceJob();
-		job.setId(record.getDevicejobId());
+		job.setId(record.getId());
 		job.setDeviceId(record.getDeviceId());
-		job.setTestRunId(record.getTestrunId());
+		job.setTestRunId(record.getTestRunId());
 		job.setStatus(record.getStatus());
 		job.setCreated(record.getCreated());
 		job.setUpdated(record.getUpdated());
@@ -33,19 +33,23 @@ public class DeviceJob extends CbtEntity {
 	}
 
 	private Long deviceId;
+
+	private DeviceJobMetadata metadata = new DeviceJobMetadata();
+
 	private DeviceJobStatus status;
-
 	private Long testRunId;
-
 	/**
 	 * Default constructor
 	 */
 	public DeviceJob() {
 
 	}
-
 	public Long getDeviceId() {
 		return deviceId;
+	}
+
+	public DeviceJobMetadata getMetadata() {
+		return metadata;
 	}
 
 	public DeviceJobStatus getStatus() {
@@ -60,6 +64,10 @@ public class DeviceJob extends CbtEntity {
 		this.deviceId = deviceId;
 	}
 
+	public void setMetadata(DeviceJobMetadata metadata) {
+		this.metadata = metadata;
+	}
+
 	public void setStatus(DeviceJobStatus status) {
 		this.status = status;
 	}
@@ -70,7 +78,8 @@ public class DeviceJob extends CbtEntity {
 
 	@Override
 	public String toString() {
-		return Utils.toString("Device", "id", getId(), "deviceId", deviceId, "testRun", testRunId, "status", status, "meta", getMetadata());
+		return Utils.toString("DeviceJob", "id", getId(), "deviceId", deviceId, "testRun", testRunId, "status", status,
+				"meta", getMetadata());
 	}
 
 }
