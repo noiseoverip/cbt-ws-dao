@@ -136,14 +136,12 @@ public class TestRunDao {
 
 		TestRunComplex testRun = new TestRunComplex();
 		testRun.setId(testRunId);
-		testRun.setTestConfigId(result.getValue(TESTCONFIG.ID));
-		testRun.setTestProfileId(result.getValue(TESTPROFILE.ID));
 		testRun.setTestProfile(result.into(TestProfile.class));
 		testRun.setTestConfig(result.into(TestConfig.class));
 
 		// Construct device type list
 		Result<Record> resultDeviceTypes = sqexec.select().from(TESTPROFILE_DEVICES)
-				.where(TESTPROFILE_DEVICES.TESTPROFILE_ID.eq(testRun.getTestProfileId())).fetch();
+				.where(TESTPROFILE_DEVICES.TESTPROFILE_ID.eq(testRun.getTestProfile().getId())).fetch();
 		List<Long> deviceTypes = new ArrayList<Long>(resultDeviceTypes.size());
 		for (Record r : resultDeviceTypes) {
 			deviceTypes.add(r.getValue(TESTPROFILE_DEVICES.DEVICETYPE_ID));

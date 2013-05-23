@@ -88,7 +88,6 @@ public class TestConfigDao {
 	 * @return
 	 */
 	public TestConfigComplex[] getByUserId(Long userId) {
-
 		List<TestConfigComplex> testExecutions = new ArrayList<TestConfigComplex>();
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record> result = sqexec.select().from(TESTCONFIG).join(TESTSCRIPT)
@@ -106,7 +105,6 @@ public class TestConfigDao {
 			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
 			tc.setUpdated(r.getValue(TESTCONFIG.UPDATED));
 			testExecutions.add(tc);
-			mLogger.debug(tc);
 		}
 		return testExecutions.toArray(new TestConfigComplex[testExecutions.size()]);
 	}

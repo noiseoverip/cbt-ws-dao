@@ -3,51 +3,26 @@ package com.cbt.ws.entity;
 import java.util.Date;
 
 import com.cbt.ws.jooq.enums.DeviceState;
-import com.cbt.ws.jooq.tables.records.DeviceRecord;
-import com.cbt.ws.utils.Utils;
 import com.google.common.base.Objects;
 
 /**
  * Device object entity
  * 
- * @author saulius
+ * @author SauliusAlisauskas
  * 
  */
 public class Device extends CbtEntity {
-	
-	public Device() {
-		
-	}
-	
-	/**
-	 * Constructor to create device object from Jooq record
-	 * 
-	 * @param record
-	 * @return
-	 */
-	public static Device fromJooqRecord(DeviceRecord record) {
-		if (null == record) {
-			return null;
-		}
-		Device device = new Device();
-		device.setId(record.getId());
-		device.setDeviceosId(record.getDeviceosId());
-		device.setDevicetypeId(record.getDevicetypeId());
-		device.setDeviceuniqueId(record.getDeviceuniqueId());
-		device.setSerialnumber(record.getSerialnumber());
-		device.setState(record.getState());
-		device.setUpdated(record.getUpdated());
-		device.setUserId(record.getUserId());
-		return device;
-	}
-
 	private Long deviceOsId;
 	private Long deviceTypeId;
 	private String deviceUniqueId;
+	private Long ownerId;
 	private String serialNumber;
 	private DeviceState state;
-
 	private Date updated;
+
+	public Device() {
+
+	}
 
 	@Override
 	public boolean equals(Object object) {
@@ -59,7 +34,7 @@ public class Device extends CbtEntity {
 			}
 		}
 		return false;
-	}
+	}	
 
 	public Long getDeviceOsId() {
 		return deviceOsId;
@@ -71,6 +46,10 @@ public class Device extends CbtEntity {
 
 	public String getDeviceUniqueId() {
 		return deviceUniqueId;
+	}
+
+	public Long getOwnerId() {
+		return ownerId;
 	}
 
 	public String getSerialNumber() {
@@ -85,19 +64,23 @@ public class Device extends CbtEntity {
 		return updated;
 	}
 
-	public void setDeviceosId(Long deviceOsId) {
+	public void setDeviceOsId(Long deviceOsId) {
 		this.deviceOsId = deviceOsId;
 	}
 
-	public void setDevicetypeId(Long deviceTypeId) {
+	public void setDeviceTypeId(Long deviceTypeId) {
 		this.deviceTypeId = deviceTypeId;
 	}
 
-	public void setDeviceuniqueId(String deviceUniqueId) {
+	public void setDeviceUniqueId(String deviceUniqueId) {
 		this.deviceUniqueId = deviceUniqueId;
 	}
 
-	public void setSerialnumber(String serialNumber) {
+	public void setOwnerId(Long ownerId) {
+		this.ownerId = ownerId;
+	}
+
+	public void setSerialNumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
 
@@ -111,13 +94,8 @@ public class Device extends CbtEntity {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass())
-		.add("id", getId())
-        .add("serial", serialNumber)
-        .add( "state", state)
-        .add("deviceTypeId", deviceTypeId)
-        .add("user_id", getUserId())
-        .add("lastUpdated", updated)
-        .toString();
+		return Objects.toStringHelper(this.getClass()).add("id", getId()).add("serial", serialNumber)
+				.add("state", state).add("deviceTypeId", deviceTypeId).add("user_id", getUserId())
+				.add("lastUpdated", updated).toString();
 	}
 }

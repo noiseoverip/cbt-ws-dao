@@ -100,21 +100,18 @@ public class TestScriptDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Record result = sqexec.select().from(TESTSCRIPT).where(TESTSCRIPT.ID.eq(testScriptId)).fetchOne();
 		TestScript testScript = result.into(TestScript.class);
-		// Need to parse test clases separately since those are in JSON format
+		// Need to parse test classes separately since those are in JSON format
 		
 		String classesJson = result.getValue(TESTSCRIPT.CLASSES);
 		if (null != classesJson) {
 			try {
 				testScript.setTestClasses(objectMapper.readValue(classesJson, String[].class));
 			} catch (JsonParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				mLogger.error(e);
 			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				mLogger.error(e);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				mLogger.error(e);
 			}
 		}
 		return testScript;

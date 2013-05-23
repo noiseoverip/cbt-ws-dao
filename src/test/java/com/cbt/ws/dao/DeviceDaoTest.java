@@ -38,11 +38,11 @@ public class DeviceDaoTest {
 		if (null == device) {
 			device = new Device();
 			device.setUserId(1L);
-			device.setDevicetypeId(1L);
-			device.setDeviceosId(1L);
-			device.setSerialnumber("someserialnumbver");
+			device.setDeviceTypeId(1L);
+			device.setDeviceOsId(1L);
+			device.setSerialNumber("someserialnumbver");
 			String uniqueId = Utils.Md5(Utils.buildContentForDeviceUniqueId(device));	
-			device.setDeviceuniqueId(uniqueId);
+			device.setDeviceUniqueId(uniqueId);
 		}		
 		Long deviceId = dao.add(device);
 		assertTrue("Failed to add new device:" + device, deviceId > 0);
@@ -58,7 +58,6 @@ public class DeviceDaoTest {
 			mLogger.error("Could not delete device", e);
 			fail("Could not delete " + device);
 		}
-		// TODO: add verify that it was deleted
 	}
 	
 	/**
@@ -70,10 +69,10 @@ public class DeviceDaoTest {
 		Device device1 = createNewDevice(dao, null);		
 		Device device2 = new Device();		
 		device2.setUserId(device1.getUserId());
-		device2.setDeviceosId(device1.getDeviceOsId());
-		device2.setDevicetypeId(device1.getDeviceTypeId());
-		device2.setSerialnumber(device1.getSerialNumber());
-		device2.setDeviceuniqueId(device1.getDeviceUniqueId());
+		device2.setDeviceOsId(device1.getDeviceOsId());
+		device2.setDeviceTypeId(device1.getDeviceTypeId());
+		device2.setSerialNumber(device1.getSerialNumber());
+		device2.setDeviceUniqueId(device1.getDeviceUniqueId());
 		
 		// Try to add with the same id		
 		try {

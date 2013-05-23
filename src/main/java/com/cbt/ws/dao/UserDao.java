@@ -91,7 +91,7 @@ public class UserDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Result<Record2<Long, Integer>> result = sqexec.select(DEVICE_JOB.DEVICE_ID, Factory.count().as("runs"))
 				.from(DEVICE_JOB).join(DEVICE).on(DEVICE_JOB.DEVICE_ID.eq(DEVICE.ID))
-				.where(DEVICE.USER_ID.eq(userId)).groupBy(DEVICE_JOB.DEVICE_ID).fetch();
+				.where(DEVICE.OWNER_ID.eq(userId)).groupBy(DEVICE_JOB.DEVICE_ID).fetch();
 		return result.intoMaps();
 	}
 	

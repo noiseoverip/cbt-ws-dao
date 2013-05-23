@@ -47,8 +47,8 @@ public class DeviceDao {
 	public Long add(Device device) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Long newDeviceId = sqexec
-				.insertInto(DEVICE, DEVICE.USER_ID, DEVICE.SERIALNUMBER, DEVICE.DEVICEUNIQUE_ID, DEVICE.DEVICETYPE_ID,
-						DEVICE.DEVICEOS_ID)
+				.insertInto(DEVICE, DEVICE.OWNER_ID, DEVICE.SERIAL_NUMBER, DEVICE.DEVICE_UNIQUE_ID, DEVICE.DEVICE_TYPE_ID,
+						DEVICE.DEVICE_OS_ID)
 				.values(device.getUserId(), device.getSerialNumber(), device.getDeviceUniqueId(),
 						device.getDeviceTypeId(), device.getDeviceOsId()).returning(DEVICE.ID).fetchOne().getId();
 		return newDeviceId;
@@ -77,7 +77,7 @@ public class DeviceDao {
 	public Device getDevice(Long deviceId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.ID.eq(deviceId)).fetchOne();
-		return Device.fromJooqRecord(record);
+		return record.into(Device.class);
 	}
 
 	/**
@@ -88,9 +88,9 @@ public class DeviceDao {
 	 */
 	public Device getDeviceByUid(String uniqueId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.DEVICEUNIQUE_ID.eq(uniqueId))
+		DeviceRecord record = (DeviceRecord) sqexec.select().from(DEVICE).where(DEVICE.DEVICE_UNIQUE_ID.eq(uniqueId))
 				.fetchOne();
-		return Device.fromJooqRecord(record);
+		return record.into(Device.class);
 	}
 
 	/**
@@ -102,28 +102,27 @@ public class DeviceDao {
 	public List<Device> getDevicesOfType(Long deviceType, DeviceState state) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		SelectJoinStep<Record> select = sqexec.select().from(DEVICE);
-		SelectConditionStep<Record> condition = select.where(DEVICE.DEVICETYPE_ID.eq(deviceType));
+		SelectConditionStep<Record> condition = select.where(DEVICE.DEVICE_TYPE_ID.eq(deviceType));
 		if (null != state) {
 			condition = condition.and(DEVICE.STATE.eq(state));
-		}		
-		List<Device> devices = condition.fetch()
-				.map(new RecordMapper<Record, Device>() {
-					@Override
-					public Device map(Record record) {
-						return Device.fromJooqRecord((DeviceRecord) record);
-					}
-				});
-		
+		}
+		List<Device> devices = condition.fetch().map(new RecordMapper<Record, Device>() {
+			@Override
+			public Device map(Record record) {
+				return record.into(Device.class);
+			}
+		});
+
 		return devices;
 	}
-	
+
 	public List<Device> getAllActive() {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.STATE.eq(DeviceState.ONLINE)).fetch()
 				.map(new RecordMapper<Record, Device>() {
 					@Override
 					public Device map(Record record) {
-						return Device.fromJooqRecord((DeviceRecord) record);
+						return record.into(Device.class);
 					}
 				});
 		return devices;
@@ -135,24 +134,55 @@ public class DeviceDao {
 	 * @param userId
 	 * @return Devices owned by user and devices shared with user
 	 */
-	public List<Device> getDevicesByUser(Long userId) {
+	public List<Device> getAllAvailableForUser(Long userId, Long deviceType, DeviceState state) {
+		List<Device> ownedDevices = getOwnedByUser(userId, deviceType, state);
+		List<Device> sharedDevices=getSharedWithUser(userId, deviceType, state);
+		if (null != ownedDevices) {			
+			if (null != sharedDevices) {
+				ownedDevices.addAll(sharedDevices);
+			}			
+		} else {
+			ownedDevices = sharedDevices;
+		}
+		return ownedDevices;
+	}
+
+	public List<Device> getOwnedByUser(Long userId, Long deviceType, DeviceState state) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		List<Device> devices = sqexec.select().from(DEVICE).where(DEVICE.USER_ID.eq(userId)).fetch()
-				.map(new RecordMapper<Record, Device>() {
-					@Override
-					public Device map(Record record) {
-						return Device.fromJooqRecord((DeviceRecord) record);
-					}
-				});
-		List<Device> sharedDevices = sqexec.select(DEVICE.fields()).from(DEVICE).join(DEVICE_SHARING)
-				.on(DEVICE_SHARING.DEVICE_ID.eq(DEVICE.ID)).where(DEVICE_SHARING.USER_ID.eq(userId)).fetch()
-				.map(new RecordMapper<Record, Device>() {
-					@Override
-					public Device map(Record record) {
-						return record.into(Device.class);
-					}
-				});
-		devices.addAll(sharedDevices);
+		SelectJoinStep<Record> select = sqexec.select().from(DEVICE);
+		SelectConditionStep<Record> condition = select.where(DEVICE.OWNER_ID.eq(userId));
+		if (null != deviceType) {
+			condition = condition.and(DEVICE.DEVICE_TYPE_ID.eq(deviceType));
+		}
+		if (null != state) {
+			condition = condition.and(DEVICE.STATE.eq(state));
+		}
+		List<Device> devices = condition.fetch().map(new RecordMapper<Record, Device>() {
+			@Override
+			public Device map(Record record) {
+				return record.into(Device.class);
+			}
+		});
+		return devices;
+	}
+
+	public List<Device> getSharedWithUser(Long userId, Long deviceType, DeviceState state) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		SelectJoinStep<Record> select = sqexec.select().from(DEVICE).join(DEVICE_SHARING)
+				.on(DEVICE_SHARING.DEVICE_ID.eq(DEVICE.ID));
+		SelectConditionStep<Record> condition = select.where(DEVICE_SHARING.USER_ID.eq(userId));
+		if (null != deviceType) {
+			condition = condition.and(DEVICE.DEVICE_TYPE_ID.eq(deviceType));
+		}
+		if (null != state) {
+			condition = condition.and(DEVICE.STATE.eq(state));
+		}
+		List<Device> devices = condition.fetch().map(new RecordMapper<Record, Device>() {
+			@Override
+			public Device map(Record record) {
+				return record.into(Device.class);
+			}
+		});
 		return devices;
 	}
 
@@ -179,7 +209,7 @@ public class DeviceDao {
 		Result<Record> result = sqexec.select().from(DEVICE_TYPE).fetch();
 		return result.intoMaps();
 	}
-	
+
 	/**
 	 * Return existing device type based on provided properties, create if doesn't exist
 	 * 
@@ -210,8 +240,8 @@ public class DeviceDao {
 	 */
 	public void updateDevice(Device device) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int count = sqexec.update(DEVICE).set(DEVICE.DEVICETYPE_ID, device.getDeviceTypeId())
-				.set(DEVICE.DEVICEOS_ID, device.getDeviceOsId()).set(DEVICE.STATE, device.getState())
+		int count = sqexec.update(DEVICE).set(DEVICE.DEVICE_TYPE_ID, device.getDeviceTypeId())
+				.set(DEVICE.DEVICE_OS_ID, device.getDeviceOsId()).set(DEVICE.STATE, device.getState())
 				.set(DEVICE.UPDATED, new Timestamp(Calendar.getInstance().getTimeInMillis()))
 				.where(DEVICE.ID.eq(device.getId())).execute();
 		if (count != 1) {

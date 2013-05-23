@@ -87,7 +87,6 @@ public class TestRunDaoTest {
 			mLogger.error("Could not delete", e);
 			fail("Could not delete " + testRun);
 		}
-		// TODO: add verify that it was deleted
 	}
 	
 	/**
