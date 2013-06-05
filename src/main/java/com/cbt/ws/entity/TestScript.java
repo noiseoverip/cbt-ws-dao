@@ -14,7 +14,18 @@ public class TestScript extends CbtEntity {
 	private String fileName;
 	private String path;
 	private String[] testClasses;
-
+	
+	public TestScript() {
+		
+	}
+	
+	public TestScript(Long id, String name, String fileName, String path) {
+		this.setName(name);
+		this.setId(id);
+		this.fileName = fileName;
+		this.path = path;
+	}
+	
 	public String getFileName() {
 		return fileName;
 	}

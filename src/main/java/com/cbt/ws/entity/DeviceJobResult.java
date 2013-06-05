@@ -2,6 +2,7 @@ package com.cbt.ws.entity;
 
 import com.cbt.ws.jooq.tables.records.DeviceJobResultRecord;
 import com.cbt.ws.utils.Utils;
+import com.google.common.base.Objects;
 
 /**
  * Device job result entity
@@ -95,8 +96,12 @@ public class DeviceJobResult extends CbtEntity {
 
 	@Override
 	public String toString() {
-		return Utils.toString("DeviceJobResult", "id", getId(), "deviceJobId", devicejobId, "testsRun", testsRun, "state",
-				state, "failures" + testsFailed, "errors", testsErrors);
+		return Objects.toStringHelper(this.getClass()).add("id", getId())
+				.add("deviceJobId", devicejobId)
+				.add("state", state)
+				.add("failures" , testsFailed)
+				.add("errors", testsErrors)
+				.add("testsRun", testsRun).toString(); 
 	}
 	
 	@Override

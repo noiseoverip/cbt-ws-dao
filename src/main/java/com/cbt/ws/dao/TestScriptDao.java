@@ -73,6 +73,8 @@ public class TestScriptDao {
 		if (new File(path).mkdirs()) {
 			mLogger.info("New folder created:" + path);
 			return path;
+		} else {
+			mLogger.error("Could not create new folder:" + path);
 		}
 		return null;
 	}

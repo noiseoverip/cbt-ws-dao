@@ -7,10 +7,13 @@ import static com.cbt.ws.jooq.tables.Testrun.TESTRUN;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
@@ -61,7 +64,7 @@ public class TestRunDao {
 	 */
 	public void delete(TestRun testRun) throws CbtDaoException {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
-		int result = sqexec.delete(TESTRUN).where(TESTRUN.ID.eq(testRun.getId())).execute();
+		int result = sqexec.delete(TESTRUN).where(TESTRUN.TEST_CONFIG_ID.eq(testRun.getId())).execute();
 		if (result != 1) {
 			throw new CbtDaoException("Error while deleting device, result:" + result);
 		}
@@ -78,7 +81,7 @@ public class TestRunDao {
 		Result<Record> result = sqexec.select().from(TESTRUN).orderBy(TESTRUN.CREATED.desc()).fetch();
 		for (Record r : result) {
 			TestRun tr = new TestRun();
-			tr.setId(r.getValue(TESTRUN.ID));
+			tr.setId(r.getValue(TESTRUN.TEST_CONFIG_ID));
 			tr.setTestConfigId(r.getValue(TESTRUN.TEST_CONFIG_ID));
 			tr.setCreated(r.getValue(TESTRUN.CREATED));
 			tr.setUpdated(r.getValue(TESTRUN.UPDATED));
@@ -109,6 +112,15 @@ public class TestRunDao {
 		return result;
 	}
 
+	public List<Map<String, Object>> getMapsByUserId(Long userId) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		List<Field<?>> fields = new ArrayList<Field<?>>();
+		fields.addAll(Arrays.asList(TESTRUN.fields()));
+		fields.add(TESTCONFIG.TEST_CONFIG_NAME);
+		return sqexec.select(fields).from(TESTRUN).join(TESTCONFIG).onKey().where(TESTRUN.USER_ID.eq(userId))
+				.orderBy(TESTRUN.UPDATED.desc()).fetchMaps();
+	}
+
 	/**
 	 * Get TestRun
 	 * 
@@ -131,7 +143,7 @@ public class TestRunDao {
 	public TestRunComplex getTestRunComplex(Long testRunId) {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		Record result = sqexec.select().from(TESTRUN).join(TESTCONFIG)
-				.on(TESTCONFIG.ID.eq(TESTRUN.TEST_CONFIG_ID)).join(TESTPROFILE)
+				.on(TESTCONFIG.TEST_CONFIG_ID.eq(TESTRUN.TEST_CONFIG_ID)).join(TESTPROFILE)
 				.on(TESTPROFILE.ID.eq(TESTCONFIG.TEST_PROFILE_ID)).where(TESTRUN.ID.eq(testRunId)).fetchOne();
 
 		TestRunComplex testRun = new TestRunComplex();

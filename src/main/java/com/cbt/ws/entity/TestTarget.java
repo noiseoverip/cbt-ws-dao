@@ -11,7 +11,18 @@ import com.cbt.ws.utils.Utils;
 public class TestTarget extends CbtEntity {
 	private String fileName;
 	private String path;
-
+	
+	public TestTarget() {
+		
+	}
+	
+	public TestTarget(Long id, String name, String fileName, String path) {
+		this.setName(name);
+		this.setId(id);
+		this.fileName = fileName;
+		this.path = path;
+	}
+	
 	public String getFileName() {
 		return fileName;
 	}

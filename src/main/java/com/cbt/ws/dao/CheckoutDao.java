@@ -53,7 +53,7 @@ public class CheckoutDao {
 		// TODO: improve size of returned data, we only need a couple of fields
 		Record result = sqexec.select().from(DEVICE_JOB)
 				.join(TESTRUN).on(DEVICE_JOB.TEST_RUN_ID.eq(TESTRUN.ID))
-				.join(TESTCONFIG).on(TESTCONFIG.ID.eq(TESTRUN.TEST_CONFIG_ID))
+				.join(TESTCONFIG).on(TESTCONFIG.TEST_CONFIG_ID.eq(TESTRUN.TEST_CONFIG_ID))
 				.join(TESTSCRIPT).on(TESTSCRIPT.ID.eq(TESTCONFIG.TEST_SCRIPT_ID))
 				.join(TESTTARGET).on(TESTTARGET.ID.eq(TESTCONFIG.TEST_TARGET_ID))
 				.where(DEVICE_JOB.ID.eq(devicejobId))

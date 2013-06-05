@@ -41,11 +41,11 @@ public class TestConfigDao {
 		Result<Record> result = sqexec.select().from(TESTCONFIG).orderBy(TESTCONFIG.UPDATED.desc()).fetch();
 		for (Record r : result) {
 			TestConfig tc = new TestConfig();
-			tc.setId(r.getValue(TESTCONFIG.ID));
+			tc.setId(r.getValue(TESTCONFIG.TEST_CONFIG_ID));
 			tc.setTestTargetId(r.getValue(TESTCONFIG.TEST_TARGET_ID));
 			tc.setTestScriptId(r.getValue(TESTCONFIG.TEST_SCRIPT_ID));
 			tc.setTestProfileId(r.getValue(TESTCONFIG.TEST_PROFILE_ID));
-			tc.setName(r.getValue(TESTCONFIG.NAME));
+			tc.setName(r.getValue(TESTCONFIG.TEST_CONFIG_NAME));
 			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
 			tc.setUpdated(r.getValue(TESTCONFIG.UPDATED));
 			testExecutions.add(tc);
@@ -68,11 +68,11 @@ public class TestConfigDao {
 
 		for (Record r : result) {
 			TestConfigComplex tc = new TestConfigComplex();
-			tc.setId(r.getValue(TESTCONFIG.ID));
+			tc.setId(r.getValue(TESTCONFIG.TEST_CONFIG_ID));
 			tc.setTestTarget(r.into(TestTarget.class));
 			tc.setTestScript(r.into(TestScript.class));
 			tc.setTestProfileId(r.getValue(TESTCONFIG.TEST_PROFILE_ID));
-			tc.setName(r.getValue(TESTCONFIG.NAME));
+			tc.setName(r.getValue(TESTCONFIG.TEST_CONFIG_NAME));
 			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
 			tc.setUpdated(r.getValue(TESTCONFIG.UPDATED));
 			testExecutions.add(tc);
@@ -97,11 +97,11 @@ public class TestConfigDao {
 
 		for (Record r : result) {
 			TestConfigComplex tc = new TestConfigComplex();
-			tc.setId(r.getValue(TESTCONFIG.ID));
-			tc.setTestTarget(r.into(TestTarget.class));
-			tc.setTestScript(r.into(TestScript.class));
+			tc.setId(r.getValue(TESTCONFIG.TEST_CONFIG_ID));
+			tc.setTestTarget(new TestTarget(r.getValue(TESTTARGET.ID), r.getValue(TESTTARGET.NAME), r.getValue(TESTTARGET.FILE_NAME), r.getValue(TESTTARGET.PATH)));
+			tc.setTestScript((new TestScript(r.getValue(TESTSCRIPT.ID), r.getValue(TESTSCRIPT.NAME), r.getValue(TESTSCRIPT.FILE_NAME), r.getValue(TESTSCRIPT.PATH))));
 			tc.setTestProfileId(r.getValue(TESTCONFIG.TEST_PROFILE_ID));
-			tc.setName(r.getValue(TESTCONFIG.NAME));
+			tc.setName(r.getValue(TESTCONFIG.TEST_CONFIG_NAME));
 			tc.setUserId(r.getValue(TESTCONFIG.USER_ID));
 			tc.setUpdated(r.getValue(TESTCONFIG.UPDATED));
 			testExecutions.add(tc);
@@ -119,11 +119,11 @@ public class TestConfigDao {
 		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
 		mLogger.trace("Adding new test configuration");
 		Long testConfigID = sqexec
-				.insertInto(TESTCONFIG, TESTCONFIG.USER_ID, TESTCONFIG.NAME, TESTCONFIG.TEST_SCRIPT_ID,
+				.insertInto(TESTCONFIG, TESTCONFIG.USER_ID, TESTCONFIG.TEST_CONFIG_NAME, TESTCONFIG.TEST_SCRIPT_ID,
 						TESTCONFIG.TEST_TARGET_ID, TESTCONFIG.TEST_PROFILE_ID)
 				.values(testConfig.getUserId(), testConfig.getName(), testConfig.getTestScriptId(),
 						testConfig.getTestTargetId(), testConfig.getTestProfileId())
-				.returning(TESTCONFIG.ID).fetchOne().getId();
+				.returning(TESTCONFIG.TEST_CONFIG_ID).fetchOne().getTestConfigId();
 		mLogger.trace("Added test configuration, new id:" + testConfigID);
 		return testConfigID;
 	}
