@@ -1,11 +1,13 @@
 package com.cbt.ws.dao;
 
 import static com.cbt.ws.jooq.tables.DeviceJob.DEVICE_JOB;
+import static com.cbt.ws.jooq.tables.DeviceJobResult.DEVICE_JOB_RESULT;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jooq.Record;
@@ -173,5 +175,20 @@ public class DevicejobDao {
 		DeviceJobRecord record = (DeviceJobRecord) sqexec.select().from(DEVICE_JOB)
 				.where(DEVICE_JOB.ID.eq(id)).fetchOne();
 		return DeviceJob.fromJooqRecord(record);
+	}
+	
+	/**
+	 * Get device job by id, attach device job result
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Map<String, Object> getByIdWithResult(Long id) {
+		Executor sqexec = new Executor(Db.getConnection(), SQLDialect.MYSQL);
+		Map<String, Object> deviceJob = sqexec.select().from(DEVICE_JOB)
+				.where(DEVICE_JOB.ID.eq(id)).fetchOne().intoMap();
+		Map<String, Object> result = sqexec.select().from(DEVICE_JOB_RESULT).where(DEVICE_JOB_RESULT.DEVICEJOBID.eq(id)).fetchOne().intoMap();
+		deviceJob.put("result", result);		
+		return deviceJob;
 	}
 }

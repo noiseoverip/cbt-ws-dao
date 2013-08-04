@@ -89,4 +89,9 @@ public class DevicejobDaoTest {
 		// Delete
 		deleteJob(job);
 	}
+	
+	@Test
+	public void testGetById2() {
+		logger.info(mUnit.getByIdWithResult(129L));
+	}
 }
