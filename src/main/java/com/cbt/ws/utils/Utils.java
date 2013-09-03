@@ -15,18 +15,16 @@ import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import com.cbt.ws.entity.Device;
-
 /**
  * Utility class for common helper methods
  * 
  * @author SauliusAlisauskas 2013-03-24 Initial version
- *
+ * 
  */
 public final class Utils {
-	
+
 	private static final Logger mLogger = Logger.getLogger(Utils.class);
-	
+
 	/**
 	 * Save file to specified location
 	 * 
@@ -78,8 +76,9 @@ public final class Utils {
 	 * @param device
 	 * @return
 	 */
-	public static String buildContentForDeviceUniqueId(Device device) {
-		return device.getUserId() + device.getSerialNumber() + device.getDeviceTypeId() + device.getDeviceOsId();
+	public static String buildContentForDeviceUniqueId(Long userId, String serialNumber, Long deviceTypeId,
+			Long deviceOsId) {
+		return userId + serialNumber + deviceTypeId + deviceOsId;
 	}
 
 	/**
@@ -100,7 +99,7 @@ public final class Utils {
 		}
 		return "Should provide equal number of arguments for toString(), provided:" + vargs.length;
 	}
-	
+
 	/**
 	 * Extract specified ZIP archive into specified destination folder
 	 * 
