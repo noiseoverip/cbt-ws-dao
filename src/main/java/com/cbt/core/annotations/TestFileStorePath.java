@@ -1,4 +1,4 @@
-package com.cbt.ws.annotations;
+package com.cbt.core.annotations;
 
 import com.google.inject.BindingAnnotation;
 import java.lang.annotation.Target;

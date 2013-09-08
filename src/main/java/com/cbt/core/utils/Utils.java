@@ -1,4 +1,4 @@
-package com.cbt.ws.utils;
+package com.cbt.core.utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,12 +19,12 @@ import org.apache.log4j.Logger;
  * Utility class for common helper methods
  * 
  * @author SauliusAlisauskas 2013-03-24 Initial version
- * 
+ *
  */
-public final class Utils {
-
+public class Utils {
+	
 	private static final Logger mLogger = Logger.getLogger(Utils.class);
-
+	
 	/**
 	 * Save file to specified location
 	 * 
@@ -33,11 +33,10 @@ public final class Utils {
 	 * @throws IOException
 	 */
 	public static void writeToFile(final InputStream uploadedInputStream, final String filePath) throws IOException {
-		OutputStream out = new FileOutputStream(new File(filePath));
 		int read = 0;
 		byte[] bytes = new byte[1024];
 
-		out = new FileOutputStream(new File(filePath));
+      OutputStream out = new FileOutputStream(new File(filePath));
 		while ((read = uploadedInputStream.read(bytes)) != -1) {
 			out.write(bytes, 0, read);
 		}
@@ -55,7 +54,7 @@ public final class Utils {
 	 * @param string
 	 * @return
 	 */
-	public static String Md5(String string) {
+	public static String md5(String string) {
 		try {
 			java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
 			byte[] array = md.digest(string.getBytes("UTF-8"));
@@ -68,18 +67,7 @@ public final class Utils {
 
 		}
 		return null;
-	}
-
-	/**
-	 * Return string to be used for hashing with MD5
-	 * 
-	 * @param device
-	 * @return
-	 */
-	public static String buildContentForDeviceUniqueId(Long userId, String serialNumber, Long deviceTypeId,
-			Long deviceOsId) {
-		return userId + serialNumber + deviceTypeId + deviceOsId;
-	}
+	}	
 
 	/**
 	 * Helper method to print entities in a consistent way
@@ -99,7 +87,7 @@ public final class Utils {
 		}
 		return "Should provide equal number of arguments for toString(), provided:" + vargs.length;
 	}
-
+	
 	/**
 	 * Extract specified ZIP archive into specified destination folder
 	 * 

@@ -1,4 +1,4 @@
-package com.cbt.ws.exceptions;
+package com.cbt.core.exceptions;
 
 public class CbtDaoException extends Exception {
 
