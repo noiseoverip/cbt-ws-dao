@@ -65,5 +65,10 @@
 				</excludes>
 			</resource>
 		</resources>
-	</build>	
+	</build>
+    <scm>
+        <connection>scm:git:ssh://git@github.com/noiseoverip/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/noiseoverip/${project.artifactId}.git</developerConnection>
+        <url>scm:git:ssh://git@github.com/noiseoverip/${project.artifactId}.git</url>
+    </scm>
 </project>
