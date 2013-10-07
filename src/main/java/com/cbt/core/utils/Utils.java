@@ -1,5 +1,6 @@
 package com.cbt.core.utils;
 
+import com.cbt.core.entity.Device;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -28,14 +29,15 @@ public class Utils {
     * Save file to specified location
     *
     * @param uploadedInputStream
-    * @param filePath
+    * @param file
     * @throws IOException
     */
-   public static void writeToFile(final InputStream uploadedInputStream, final String filePath) throws IOException {
+   public static void writeToFile(InputStream uploadedInputStream, File file) throws IOException {
       int read = 0;
       byte[] bytes = new byte[1024];
 
-      OutputStream out = new FileOutputStream(new File(filePath));
+      file.getParentFile().mkdirs();
+      OutputStream out = new FileOutputStream(file);
       while ((read = uploadedInputStream.read(bytes)) != -1) {
          out.write(bytes, 0, read);
       }
@@ -111,5 +113,15 @@ public class Utils {
          mLogger.debug("Extracted file:" + entry.getName() + " size:" + entry.getSize());
       }
       zipFile.close();
+   }
+
+   /**
+    * Return string to be used for hashing with MD5
+    *
+    * @param device
+    * @return
+    */
+   public static String buildContentForDeviceUniqueId(Device device) {
+      return device.getUserId() + device.getSerialNumber() + device.getDeviceTypeId() + device.getDeviceOsId();
    }
 }
