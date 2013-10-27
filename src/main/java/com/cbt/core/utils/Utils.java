@@ -1,9 +1,5 @@
 package com.cbt.core.utils;
 
-import com.cbt.core.entity.Device;
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +11,11 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+
+import com.cbt.core.entity.Device;
 
 /**
  * Utility class for common helper methods
@@ -122,6 +123,6 @@ public class Utils {
     * @return
     */
    public static String buildContentForDeviceUniqueId(Device device) {
-      return device.getUserId() + device.getSerialNumber() + device.getDeviceTypeId() + device.getDeviceOsId();
+      return device.getOwnerId() + device.getSerialNumber() + device.getDeviceTypeId() + device.getDeviceOsId();
    }
 }
