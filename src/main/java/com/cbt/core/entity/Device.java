@@ -3,6 +3,8 @@ package com.cbt.core.entity;
 import java.util.Date;
 
 import com.cbt.jooq.enums.DeviceState;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.Objects;
 
 /**
@@ -11,7 +13,11 @@ import com.google.common.base.Objects;
  * @author SauliusAlisauskas
  */
 public class Device {
+   @JsonInclude(Include.NON_NULL)
+   private DeviceOs deviceOs;
    private Long deviceOsId;
+   @JsonInclude(Include.NON_NULL)
+   private DeviceType deviceType;
    private Long deviceTypeId;
    private String deviceUniqueId;
    private Long id;
@@ -34,8 +40,16 @@ public class Device {
       return false;
    }
 
+   public DeviceOs getDeviceOs() {
+      return deviceOs;
+   }
+
    public Long getDeviceOsId() {
       return deviceOsId;
+   }
+
+   public DeviceType getDeviceType() {
+      return deviceType;
    }
 
    public Long getDeviceTypeId() {
@@ -74,8 +88,16 @@ public class Device {
       return owner;
    }
 
+   public void setDeviceOs(DeviceOs deviceOs) {
+      this.deviceOs = deviceOs;
+   }
+
    public void setDeviceOsId(Long deviceOsId) {
       this.deviceOsId = deviceOsId;
+   }
+
+   public void setDeviceType(DeviceType deviceType) {
+      this.deviceType = deviceType;
    }
 
    public void setDeviceTypeId(Long deviceTypeId) {
