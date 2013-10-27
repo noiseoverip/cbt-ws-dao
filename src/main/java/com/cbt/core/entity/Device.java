@@ -2,7 +2,9 @@ package com.cbt.core.entity;
 
 import java.util.Date;
 
-import com.cbt.jooq.enums.DeviceState;
+import javax.persistence.Column;
+
+import com.cbt.jooq.enums.DeviceDeviceState;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.Objects;
@@ -21,10 +23,12 @@ public class Device {
    private Long deviceTypeId;
    private String deviceUniqueId;
    private Long id;
-   private boolean owner;
+   private boolean listerIsOwner;
+   @JsonInclude(Include.NON_NULL)
+   private User owner;
    private Long ownerId;
    private String serialNumber;
-   private DeviceState state;
+   private DeviceDeviceState state;
    private String title;
    private Date updated;
 
@@ -39,29 +43,28 @@ public class Device {
       }
       return false;
    }
-
    public DeviceOs getDeviceOs() {
       return deviceOs;
    }
-
    public Long getDeviceOsId() {
       return deviceOsId;
    }
-
    public DeviceType getDeviceType() {
       return deviceType;
    }
-
    public Long getDeviceTypeId() {
       return deviceTypeId;
    }
-
    public String getDeviceUniqueId() {
       return deviceUniqueId;
    }
 
    public Long getId() {
       return id;
+   }
+
+   public User getOwner() {
+      return owner;
    }
 
    public Long getOwnerId() {
@@ -72,7 +75,7 @@ public class Device {
       return serialNumber;
    }
 
-   public DeviceState getState() {
+   public DeviceDeviceState getState() {
       return state;
    }
 
@@ -84,14 +87,15 @@ public class Device {
       return updated;
    }
 
-   public boolean isOwner() {
-      return owner;
+   public boolean isListerIsOwner() {
+      return listerIsOwner;
    }
 
    public void setDeviceOs(DeviceOs deviceOs) {
       this.deviceOs = deviceOs;
    }
 
+   @Column(name = "device_os_id")
    public void setDeviceOsId(Long deviceOsId) {
       this.deviceOsId = deviceOsId;
    }
@@ -100,31 +104,41 @@ public class Device {
       this.deviceType = deviceType;
    }
 
+   @Column(name = "device_type_id")
    public void setDeviceTypeId(Long deviceTypeId) {
       this.deviceTypeId = deviceTypeId;
    }
 
+   @Column(name = "device_unique_id")
    public void setDeviceUniqueId(String deviceUniqueId) {
       this.deviceUniqueId = deviceUniqueId;
    }
 
+   @Column(name = "device_id")
    public void setId(Long id) {
       this.id = id;
    }
 
-   public void setOwner(boolean owner) {
+   public void setListerIsOwner(boolean listerIsOwner) {
+      this.listerIsOwner = listerIsOwner;
+   }
+
+   public void setOwner(User owner) {
       this.owner = owner;
    }
 
+   @Column(name = "device_owner_id")
    public void setOwnerId(Long ownerId) {
       this.ownerId = ownerId;
    }
 
+   @Column(name = "device_serial_number")
    public void setSerialNumber(String serialNumber) {
       this.serialNumber = serialNumber;
    }
 
-   public void setState(DeviceState state) {
+   @Column(name = "device_state")
+   public void setState(DeviceDeviceState state) {
       this.state = state;
    }
 
@@ -132,6 +146,7 @@ public class Device {
       this.title = title;
    }
 
+   @Column(name = "device_updated")
    public void setUpdated(Date updated) {
       this.updated = updated;
    }
